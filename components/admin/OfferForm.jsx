@@ -5,14 +5,23 @@ import { useMemo, useRef, useState, useTransition } from 'react';
 import { deleteOffer, discardUploads, saveOffer } from '@/app/admin/offer-actions';
 import DistrictCombobox from '@/components/admin/DistrictCombobox';
 import ImagePicker from '@/components/admin/ImagePicker';
+import SuggestInput from '@/components/admin/SuggestInput';
 import { ChevronIcon, LockIcon, PinIcon } from '@/components/Icons';
-import { AGE_OPTIONS, DIRECTION_LABEL, FACADE_OPTIONS, FEATURE_OPTIONS, FLOOR_OPTIONS } from '@/lib/admin/options';
+import {
+  AGE_OPTIONS,
+  CUSTOM_TYPE_OPTIONS,
+  DIRECTION_LABEL,
+  FACADE_OPTIONS,
+  FEATURE_OPTIONS,
+  FLOOR_OPTIONS,
+} from '@/lib/admin/options';
 import { formatNumber } from '@/lib/format';
 
 const TYPES = [
   { key: 'villa', label: 'فيلا' },
   { key: 'apartment', label: 'شقة' },
   { key: 'land', label: 'أرض' },
+  { key: 'other', label: 'أخرى' },
 ];
 
 const PRICE_MODES = [
@@ -24,6 +33,7 @@ const PRICE_MODES = [
 const EMPTY = {
   id: null,
   type: 'villa',
+  customType: '',
   cityId: '',
   districtId: '',
   price: '',
@@ -71,7 +81,7 @@ function Field({ label, error, required, children, htmlFor }) {
   );
 }
 
-export default function OfferForm({ cities, districts, initial }) {
+export default function OfferForm({ cities, districts, usedTypes = [], initial }) {
   const isEdit = Boolean(initial?.id);
   const [form, setForm] = useState(() => ({ ...EMPTY, ...initial }));
   const [images, setImages] = useState(() => initial?.images ?? []);
@@ -133,6 +143,7 @@ export default function OfferForm({ cities, districts, initial }) {
   const validate = () => {
     const e = {};
     if (!form.type) e.type = 'اختر نوع العقار';
+    if (form.type === 'other' && !form.customType.trim()) e.customType = 'اكتب نوع العقار';
     if (!form.cityId) e.city = 'اختر المدينة';
     if (!form.districtId) e.district = 'اختر الحي';
     if (!form.area || Number(form.area) <= 0) e.area = 'اكتب المساحة';
@@ -174,6 +185,7 @@ export default function OfferForm({ cities, districts, initial }) {
 
   const isLand = form.type === 'land';
   const isApartment = form.type === 'apartment';
+  const isOther = form.type === 'other';
   const busy = isSaving || isDeleting;
 
   return (
@@ -222,6 +234,22 @@ export default function OfferForm({ cities, districts, initial }) {
               ))}
             </div>
           </Field>
+
+          {isOther ? (
+            <Field label="اكتب نوع العقار" required error={errors.customType} htmlFor="f-custom-type">
+              <SuggestInput
+                id="f-custom-type"
+                value={form.customType}
+                onChange={(v) => {
+                  setForm((f) => ({ ...f, customType: v }));
+                  if (errors.customType) setErrors((er) => ({ ...er, customType: undefined }));
+                }}
+                suggestions={[...usedTypes, ...CUSTOM_TYPE_OPTIONS]}
+                placeholder="مثل: عمارة، محطة بنزين…"
+                error={errors.customType}
+              />
+            </Field>
+          ) : null}
 
           <div className="form-grid">
             <Field label="المدينة" required error={errors.city} htmlFor="f-city">
@@ -364,7 +392,7 @@ export default function OfferForm({ cities, districts, initial }) {
                 </select>
               </div>
             </Field>
-            {isApartment ? (
+            {isApartment || isOther ? (
               <Field label="الدور" htmlFor="f-floor">
                 <div className="field field--select">
                   <select id="f-floor" value={String(form.floor)} onChange={set('floor')}>
@@ -377,7 +405,8 @@ export default function OfferForm({ cities, districts, initial }) {
                   </select>
                 </div>
               </Field>
-            ) : (
+            ) : null}
+            {!isApartment ? (
               <Field label="عرض الشارع (م)" htmlFor="f-street">
                 <div className="field">
                   <input
@@ -391,7 +420,7 @@ export default function OfferForm({ cities, districts, initial }) {
                   />
                 </div>
               </Field>
-            )}
+            ) : null}
           </div>
         </Section>
 

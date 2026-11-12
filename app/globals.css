@@ -990,3 +990,83 @@ a {
   font-size: 15px;
   white-space: nowrap;
 }
+
+/* ===== عروض مشابهة ===== */
+.similar {
+  margin-top: 28px;
+}
+
+.similar h2 {
+  font-size: 19px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.similar__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.similar__item {
+  display: grid;
+  gap: 2px;
+  padding-bottom: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  height: 100%;
+}
+
+.similar__media {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  background: var(--placeholder);
+  margin-bottom: 6px;
+}
+
+.similar__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.similar__media--cover {
+  background: var(--primary);
+  color: #fff;
+}
+
+.similar__media--cover svg {
+  width: 34px;
+  height: 34px;
+}
+
+.similar__district,
+.similar__type,
+.similar__price {
+  padding-inline: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.similar__district {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.similar__type {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.similar__price {
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 14px;
+}

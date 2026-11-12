@@ -6,6 +6,6 @@ export const metadata = { title: 'إضافة عرض' };
 
 export default async function NewOfferPage() {
   const { accessToken } = await requireAdmin('/admin/new');
-  const { cities, districts } = await getLocations(accessToken);
-  return <OfferForm cities={cities} districts={districts} />;
+  const { cities, districts, usedTypes } = await getLocations(accessToken);
+  return <OfferForm cities={cities} districts={districts} usedTypes={usedTypes} />;
 }

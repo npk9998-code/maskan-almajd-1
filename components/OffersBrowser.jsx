@@ -11,6 +11,7 @@ import {
   offerWhatsappText,
   requestMessage,
   resultsHeading,
+  typeName,
   whatsappLink,
 } from '@/lib/format';
 
@@ -77,7 +78,7 @@ export default function OffersBrowser({ offers, cities, whatsappNumber, siteUrl 
       if (type !== 'all' && offer.type !== type) continue;
       if (city && offer.city !== city) continue;
       if (q) {
-        const haystack = normalizeArabic(`${offer.district} ${offer.city}`);
+        const haystack = normalizeArabic(`${offer.district} ${offer.city} ${typeName(offer)}`);
         if (!haystack.includes(q)) continue;
       }
       if (maxPrice && offer.price != null) {
@@ -115,7 +116,7 @@ export default function OffersBrowser({ offers, cities, whatsappNumber, siteUrl 
             name="q"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="ابحث بالحي أو المدينة…"
+            placeholder="ابحث بالحي أو المدينة أو النوع…"
             autoComplete="off"
             enterKeyHint="search"
             spellCheck={false}

@@ -8,14 +8,14 @@ import { imageUrl } from '@/lib/supabase';
 export const metadata = { title: 'تعديل العرض' };
 
 const COLUMNS =
-  'id,property_type,district_id,price,price_display,area,rooms,bathrooms,property_age_years,facade,street_width,floor,features,description,ad_license_number,status,district:districts(city_id),images:listing_images(image_path,thumb_path,sort_order),note:private_notes(notes)';
+  'id,property_type,custom_type,district_id,price,price_display,area,rooms,bathrooms,property_age_years,facade,street_width,floor,features,description,ad_license_number,status,district:districts(city_id),images:listing_images(image_path,thumb_path,sort_order),note:private_notes(notes)';
 
 export default async function EditOfferPage({ params }) {
   const { id } = await params;
   if (!/^\d{1,9}$/.test(id)) notFound();
   const { accessToken } = await requireAdmin(`/admin/offers/${id}/edit`);
 
-  const [rows, { cities, districts }] = await Promise.all([
+  const [rows, { cities, districts, usedTypes }] = await Promise.all([
     adminSelect(`listings?select=${COLUMNS}&id=eq.${id}&limit=1`, accessToken),
     getLocations(accessToken),
   ]);
@@ -26,6 +26,7 @@ export default async function EditOfferPage({ params }) {
   const initial = {
     id: r.id,
     type: r.property_type,
+    customType: r.custom_type ?? '',
     cityId: r.district?.city_id ?? '',
     districtId: r.district_id,
     price: r.price == null ? '' : String(Math.round(Number(r.price))),
@@ -53,5 +54,5 @@ export default async function EditOfferPage({ params }) {
       })),
   };
 
-  return <OfferForm cities={cities} districts={districts} initial={initial} />;
+  return <OfferForm cities={cities} districts={districts} usedTypes={usedTypes} initial={initial} />;
 }

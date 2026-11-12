@@ -10,6 +10,7 @@ export const metadata = { title: 'عروضي' };
 const COLUMNS = [
   'id',
   'property_type',
+  'custom_type',
   'price',
   'price_display',
   'status',
@@ -23,6 +24,7 @@ function toRow(r) {
   return {
     id: r.id,
     type: r.property_type,
+    customType: r.custom_type,
     price: r.price == null ? null : Number(r.price),
     priceDisplay: r.price_display,
     status: r.status,

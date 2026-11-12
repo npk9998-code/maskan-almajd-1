@@ -7,7 +7,7 @@ import { getActionToken } from '@/lib/admin/session';
 
 const MAX_UPLOAD_BYTES = 950 * 1024;
 const IMAGE_TYPES = { 'image/webp': 'webp', 'image/jpeg': 'jpg', 'image/png': 'png' };
-const TYPES = new Set(['villa', 'apartment', 'land']);
+const TYPES = new Set(['villa', 'apartment', 'land', 'other']);
 const PRICE_DISPLAYS = new Set(['show', 'negotiable', 'hidden']);
 const STATUSES = new Set(['available', 'hidden', 'sold']);
 
@@ -74,6 +74,8 @@ const toText = (v, max) => {
 function buildRow(input) {
   const errors = {};
   if (!TYPES.has(input.type)) errors.type = 'اختر نوع العقار';
+  const customType = input.type === 'other' ? toText(input.customType, 40) : null;
+  if (input.type === 'other' && !customType) errors.customType = 'اكتب نوع العقار';
   const districtId = toInt(input.districtId);
   if (!input.cityId) errors.city = 'اختر المدينة';
   if (!districtId) errors.district = 'اختر الحي';
@@ -87,6 +89,7 @@ function buildRow(input) {
   const status = STATUSES.has(input.status) ? input.status : 'available';
   const isLand = input.type === 'land';
   const isApartment = input.type === 'apartment';
+  const isOther = input.type === 'other';
 
   const features = Array.isArray(input.features)
     ? [...new Set(input.features.map((f) => String(f).trim()).filter(Boolean))].slice(0, 30).map((f) => f.slice(0, 40))
@@ -96,6 +99,7 @@ function buildRow(input) {
     errors,
     row: {
       property_type: input.type,
+      custom_type: customType,
       district_id: districtId,
       price,
       price_display: priceDisplay,
@@ -105,7 +109,7 @@ function buildRow(input) {
       property_age_years: isLand ? null : toInt(input.ageYears),
       facade: toText(input.facade, 40),
       street_width: isApartment ? null : toNumber(input.streetWidth),
-      floor: isApartment ? toInt(input.floor) : null,
+      floor: isApartment || isOther ? toInt(input.floor) : null,
       features,
       description: toText(input.description, 1000),
       ad_license_number: toText(input.adLicense, 40),

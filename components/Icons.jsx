@@ -152,4 +152,15 @@ export function LockIcon(props) {
   );
 }
 
-export const TYPE_ICON = { villa: HouseIcon, apartment: BuildingIcon, land: LandIcon };
+export function StoreIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M4 10v10h16V10" />
+      <path d="M3 10l1.5-5h15L21 10z" />
+      <path d="M3 10a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0" />
+      <path d="M10 20v-5h4v5" />
+    </svg>
+  );
+}
+
+export const TYPE_ICON = { villa: HouseIcon, apartment: BuildingIcon, land: LandIcon, other: StoreIcon };

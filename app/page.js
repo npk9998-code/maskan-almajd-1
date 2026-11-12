@@ -12,6 +12,7 @@ function toCardData(offer) {
   return {
     id: offer.id,
     type: offer.type,
+    customType: offer.customType,
     city: offer.city,
     district: offer.district,
     direction: offer.direction,
@@ -22,6 +23,7 @@ function toCardData(offer) {
     bathrooms: offer.bathrooms,
     facade: offer.facade,
     streetWidth: offer.streetWidth,
+    ageYears: offer.ageYears,
     status: offer.status,
     isNew: isNew(offer),
     image: offer.images[0]?.thumb ?? null,

@@ -4,8 +4,10 @@ import Gallery from '@/components/Gallery';
 import ShareButton from '@/components/ShareButton';
 import { ChatIcon, ChevronIcon, LockIcon, PinIcon } from '@/components/Icons';
 import { NumberBadge, OfferCover, StatusBadge, Watermark } from '@/components/OfferMedia';
-import { isNew, offerLocation, offerSpecs, offerTitle, offerWhatsappText, priceInfo, whatsappLink } from '@/lib/format';
-import { getPublicOffer } from '@/lib/offers';
+import SimilarOffers from '@/components/SimilarOffers';
+import { isNew, offerHeading, offerSpecs, offerSubtitle, offerTitle, offerWhatsappText, priceInfo, whatsappLink } from '@/lib/format';
+import { getPublicOffer, getPublicOffers } from '@/lib/offers';
+import { pickSimilar } from '@/lib/similar';
 import { getFalLicense, getSiteUrl, getWhatsAppNumber } from '@/lib/site';
 
 // كل صفحة عرض تتجهز أول مرة تنفتح، وتتحدث من قاعدة البيانات كل دقيقة
@@ -42,8 +44,9 @@ export async function generateMetadata({ params }) {
 
 export default async function OfferPage({ params }) {
   const { id } = await params;
-  const offer = await getPublicOffer(id);
+  const [offer, allOffers] = await Promise.all([getPublicOffer(id), getPublicOffers()]);
   if (!offer) notFound();
+  const similar = pickSimilar(offer, allOffers);
 
   const title = offerTitle(offer);
   const price = priceInfo(offer);
@@ -77,10 +80,10 @@ export default async function OfferPage({ params }) {
               <StatusBadge offer={offer} isNew={isNew(offer)} />
             </div>
           ) : null}
-          <h1 className="details__title">{title}</h1>
+          <h1 className="details__title">{offerHeading(offer)}</h1>
           <p className="details__location">
             <PinIcon className="icon-sm" />
-            <span>{offerLocation(offer)}</span>
+            <span>{offerSubtitle(offer)}</span>
           </p>
           <p className={price.hidden ? 'details__price details__price--hidden' : 'details__price'}>
             {price.text}
@@ -130,6 +133,8 @@ export default async function OfferPage({ params }) {
               رخصة فال: <span className="tabular">{getFalLicense() ?? '—'}</span>
             </p>
           </div>
+
+          <SimilarOffers offers={similar} />
         </div>
       </main>
 

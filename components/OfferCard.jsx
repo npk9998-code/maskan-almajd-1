@@ -1,11 +1,21 @@
 import Link from 'next/link';
 import { AreaIcon, BathIcon, BedIcon, ChatIcon, CompassIcon, PinIcon, RoadIcon } from '@/components/Icons';
 import { NumberBadge, OfferCover, StatusBadge, Watermark } from '@/components/OfferMedia';
-import { areaText, bathsText, offerLocation, offerTitle, priceInfo, roomsText } from '@/lib/format';
+import { areaText, bathsText, offerHeading, offerSubtitle, priceInfo, roomsText } from '@/lib/format';
 
 function CardSpecs({ offer }) {
   const items =
-    offer.type === 'land'
+    offer.type === 'other'
+      ? [
+          { Icon: AreaIcon, text: offer.area ? areaText(offer.area) : null },
+          { Icon: BedIcon, text: offer.rooms != null ? roomsText(offer.rooms) : null },
+          { Icon: BathIcon, text: offer.bathrooms != null ? bathsText(offer.bathrooms) : null },
+          { Icon: RoadIcon, text: offer.streetWidth ? `شارع ${offer.streetWidth} م` : null },
+          { Icon: CompassIcon, text: offer.facade },
+        ]
+          .filter((item) => item.text)
+          .slice(0, 3)
+      : offer.type === 'land'
       ? [
           { Icon: AreaIcon, text: offer.area ? areaText(offer.area) : null },
           { Icon: RoadIcon, text: offer.streetWidth ? `شارع ${offer.streetWidth} م` : null },
@@ -32,7 +42,7 @@ export default function OfferCard({ offer, priority = false, whatsappHref }) {
   const href = `/offers/${offer.id}`;
   const price = priceInfo(offer);
   const hasImage = Boolean(offer.image);
-  const title = offerTitle(offer);
+  const title = offerHeading(offer);
 
   return (
     <article className={offer.status === 'sold' ? 'card card--sold' : 'card'}>
@@ -61,7 +71,7 @@ export default function OfferCard({ offer, priority = false, whatsappHref }) {
         <h3 className="card__title">{title}</h3>
         <p className="card__location">
           <PinIcon className="icon-sm" />
-          <span>{offerLocation(offer)}</span>
+          <span>{offerSubtitle(offer)}</span>
         </p>
         <CardSpecs offer={offer} />
 
