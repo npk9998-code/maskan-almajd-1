@@ -8,15 +8,28 @@ export const metadata = { title: 'المدن' };
 
 export default async function CitiesPage() {
   const { accessToken } = await requireAdmin('/admin/cities');
-  const rows = await adminSelect(
-    'cities?select=id,name,is_visible,sort_order,districts(count)&order=sort_order.asc,name.asc',
-    accessToken,
-  );
+  const [rows, listings] = await Promise.all([
+    adminSelect('cities?select=id,name,is_visible,sort_order,districts(count)&order=sort_order.asc,name.asc', accessToken),
+    adminSelect('listings?select=status,district:districts(city_id)', accessToken),
+  ]);
+
+  // عدد العروض في كل مدينة
+  const offerCounts = new Map();
+  for (const l of listings) {
+    const cityId = l.district?.city_id;
+    if (cityId == null) continue;
+    const c = offerCounts.get(cityId) ?? { total: 0, available: 0 };
+    c.total += 1;
+    if (l.status === 'available') c.available += 1;
+    offerCounts.set(cityId, c);
+  }
+
   const cities = rows.map((c) => ({
     id: c.id,
     name: c.name,
     visible: c.is_visible,
     districtCount: c.districts?.[0]?.count ?? 0,
+    offers: offerCounts.get(c.id) ?? { total: 0, available: 0 },
   }));
 
   return (

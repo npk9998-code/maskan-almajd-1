@@ -5,6 +5,8 @@ import { useOptimistic, useState, useTransition } from 'react';
 import { setCityVisible } from '@/app/admin/city-actions';
 import { ChevronIcon } from '@/components/Icons';
 
+const offersText = (n) => (n === 0 ? 'بدون عروض' : n === 1 ? 'عرض واحد' : n === 2 ? 'عرضين' : n <= 10 ? `${n} عروض` : `${n} عرض`);
+
 export function Switch({ checked, onChange, label, disabled }) {
   return (
     <button
@@ -51,6 +53,10 @@ export default function CitiesList({ cities }) {
               <strong>{c.name}</strong>
               <span className="tabular">
                 {c.visible ? 'ظاهرة للعملاء' : 'مخفية'} · {c.districtCount} حي
+              </span>
+              <span className="city-list__offers tabular">
+                {offersText(c.offers.total)}
+                {c.offers.total > 0 ? ` (${c.offers.available} معروض)` : ''}
               </span>
             </Link>
             <Switch

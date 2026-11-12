@@ -1130,3 +1130,8 @@
   line-height: 1;
   cursor: pointer;
 }
+
+.city-list__info .city-list__offers {
+  color: var(--primary);
+  font-weight: 600;
+}
