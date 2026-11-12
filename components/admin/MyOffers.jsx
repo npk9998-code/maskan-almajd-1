@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useDeferredValue, useMemo, useOptimistic, useState, useTransition } from 'react';
 import { setListingStatus } from '@/app/admin/actions';
 import { SearchIcon, TYPE_ICON } from '@/components/Icons';
@@ -54,9 +55,9 @@ function OfferRow({ offer, onStatus, busy }) {
       </div>
 
       <div className="admin-card__actions">
-        <button type="button" className="btn btn--outline" title="نشغله في الجزء الجاي">
+        <Link href={`/admin/offers/${offer.id}/edit`} className="btn btn--outline">
           تعديل
-        </button>
+        </Link>
         <button
           type="button"
           className="btn btn--outline"

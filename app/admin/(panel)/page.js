@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import AdminHeader from '@/components/admin/AdminHeader';
 import MyOffers from '@/components/admin/MyOffers';
 import { adminSelect } from '@/lib/admin/api';
@@ -40,9 +41,9 @@ export default async function MyOffersPage() {
       <AdminHeader
         title="عروضي"
         action={
-          <button type="button" className="btn btn--primary admin-add" title="نشغلها في الجزء الجاي">
+          <Link href="/admin/new" className="btn btn--primary admin-add">
             <span aria-hidden="true">+</span> إضافة عرض
-          </button>
+          </Link>
         }
       />
       <MyOffers offers={rows.map(toRow)} />

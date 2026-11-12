@@ -50,7 +50,7 @@ export default async function OfferPage({ params }) {
             </Link>
             <NumberBadge id={offer.id} />
           </div>
-          <Watermark onCover={!hasImages} />
+          {hasImages ? null : <Watermark onCover />}
         </div>
 
         <div className="container details__body">

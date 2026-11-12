@@ -54,7 +54,7 @@ export default function OfferCard({ offer, priority = false }) {
           <StatusBadge offer={offer} isNew={offer.isNew} />
           <NumberBadge id={offer.id} />
         </span>
-        <Watermark onCover={!hasImage} />
+        {hasImage ? null : <Watermark onCover />}
       </Link>
 
       <div className="card__body">
