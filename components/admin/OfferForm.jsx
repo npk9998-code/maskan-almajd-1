@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useMemo, useRef, useState, useTransition } from 'react';
 import { deleteOffer, discardUploads, saveOffer } from '@/app/admin/offer-actions';
+import DistrictCombobox from '@/components/admin/DistrictCombobox';
 import ImagePicker from '@/components/admin/ImagePicker';
 import { ChevronIcon, LockIcon, PinIcon } from '@/components/Icons';
 import { AGE_OPTIONS, DIRECTION_LABEL, FACADE_OPTIONS, FEATURE_OPTIONS, FLOOR_OPTIONS } from '@/lib/admin/options';
@@ -95,6 +96,11 @@ export default function OfferForm({ cities, districts, initial }) {
     [districts, form.cityId],
   );
   const district = cityDistricts.find((d) => String(d.id) === String(form.districtId));
+
+  const onDistrictSelect = (d) => {
+    setForm((f) => (d ? { ...f, districtId: d.id, cityId: d.city_id } : { ...f, districtId: '' }));
+    if (d) setErrors((er) => ({ ...er, city: undefined, district: undefined }));
+  };
 
   const onCityChange = (e) => {
     setForm((f) => ({ ...f, cityId: e.target.value, districtId: '' }));
@@ -232,21 +238,14 @@ export default function OfferForm({ cities, districts, initial }) {
               </div>
             </Field>
             <Field label="الحي" required error={errors.district} htmlFor="f-district">
-              <div className="field field--select">
-                <select
-                  id="f-district"
-                  value={form.districtId}
-                  onChange={set('districtId')}
-                  disabled={!form.cityId}
-                >
-                  <option value="">{form.cityId ? 'اختر' : 'اختر المدينة أول'}</option>
-                  {cityDistricts.map((d) => (
-                    <option key={d.id} value={d.id}>
-                      {d.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <DistrictCombobox
+                districts={districts}
+                cities={cities}
+                cityId={form.cityId}
+                districtId={form.districtId}
+                error={errors.district}
+                onSelect={onDistrictSelect}
+              />
             </Field>
           </div>
 
