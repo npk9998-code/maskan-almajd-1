@@ -1,11 +1,12 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Gallery from '@/components/Gallery';
-import { ChatIcon, ChevronIcon, LockIcon, PinIcon, ShareIcon } from '@/components/Icons';
+import ShareButton from '@/components/ShareButton';
+import { ChatIcon, ChevronIcon, LockIcon, PinIcon } from '@/components/Icons';
 import { NumberBadge, OfferCover, StatusBadge, Watermark } from '@/components/OfferMedia';
-import { isNew, offerLocation, offerSpecs, offerTitle, priceInfo } from '@/lib/format';
+import { isNew, offerLocation, offerSpecs, offerTitle, offerWhatsappText, priceInfo, whatsappLink } from '@/lib/format';
 import { getPublicOffer } from '@/lib/offers';
-import { SITE } from '@/lib/site';
+import { getFalLicense, getSiteUrl, getWhatsAppNumber } from '@/lib/site';
 
 // كل صفحة عرض تتجهز أول مرة تنفتح، وتتحدث من قاعدة البيانات كل دقيقة
 export const revalidate = 60;
@@ -33,6 +34,8 @@ export default async function OfferPage({ params }) {
   const price = priceInfo(offer);
   const specs = offerSpecs(offer);
   const hasImages = offer.images.length > 0;
+  const siteUrl = getSiteUrl();
+  const whatsappHref = whatsappLink(getWhatsAppNumber(), offerWhatsappText(offer, siteUrl));
   const showStatus = offer.status === 'sold' || isNew(offer);
 
   return (
@@ -109,7 +112,7 @@ export default async function OfferPage({ params }) {
               رقم ترخيص الإعلان: <span className="tabular">{offer.adLicense ?? '—'}</span>
             </p>
             <p>
-              رخصة فال: <span className="tabular">{SITE.falLicense ?? '—'}</span>
+              رخصة فال: <span className="tabular">{getFalLicense() ?? '—'}</span>
             </p>
           </div>
         </div>
@@ -117,13 +120,16 @@ export default async function OfferPage({ params }) {
 
       <div className="bottom-bar">
         <div className="container bottom-bar__inner">
-          <button type="button" className="btn btn--wa btn--lg bottom-bar__main">
-            <ChatIcon />
-            <span>تواصل معي عبر واتساب</span>
-          </button>
-          <button type="button" className="btn btn--outline btn--lg btn--square" aria-label="مشاركة العرض">
-            <ShareIcon />
-          </button>
+          {whatsappHref ? (
+            <a href={whatsappHref} className="btn btn--wa btn--lg bottom-bar__main" target="_blank" rel="noopener noreferrer">
+              <ChatIcon />
+              <span>تواصل معي عبر واتساب</span>
+            </a>
+          ) : null}
+          <ShareButton
+            url={`${siteUrl}/offers/${offer.id}`}
+            title={`${title} في حي ${offer.district} — رقم ${offer.id}`}
+          />
         </div>
       </div>
     </>

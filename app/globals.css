@@ -975,3 +975,18 @@ a {
     scroll-behavior: auto !important;
   }
 }
+
+.toast {
+  position: fixed;
+  bottom: calc(96px + env(safe-area-inset-bottom));
+  left: 50%;
+  translate: -50% 0;
+  z-index: 30;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: var(--sold);
+  color: #fff;
+  font-weight: 600;
+  font-size: 15px;
+  white-space: nowrap;
+}

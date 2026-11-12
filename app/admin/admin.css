@@ -928,3 +928,205 @@
   width: 26px;
   height: 26px;
 }
+
+/* ---- المدن ---- */
+.admin-info {
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  line-height: 1.8;
+}
+
+.admin-ok {
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.city-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.city-list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  min-height: 72px;
+}
+
+.city-list li + li {
+  border-top: 1px solid var(--border);
+}
+
+.city-list__info {
+  flex: 1;
+  display: grid;
+  min-width: 0;
+}
+
+.city-list__info strong {
+  font-size: 18px;
+}
+
+.city-list__info span {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.city-list__more {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 44px;
+  color: var(--muted);
+}
+
+.city-list__more svg {
+  width: 20px;
+  height: 20px;
+}
+
+.switch {
+  position: relative;
+  width: 64px;
+  height: 36px;
+  flex: none;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: #d3cfc4;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.switch__thumb {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.25);
+  transition: translate 0.2s;
+}
+
+.switch.is-on {
+  background: var(--primary);
+}
+
+.switch.is-on .switch__thumb {
+  translate: -28px 0;
+}
+
+.switch:disabled {
+  opacity: 0.6;
+}
+
+.switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.switch-row span {
+  display: grid;
+}
+
+.switch-row small {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.add-city {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 56px;
+  border: 1.5px dashed var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: transparent;
+  color: var(--text);
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.add-city span {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.districts-input {
+  display: grid;
+  gap: 12px;
+}
+
+.districts-input textarea {
+  min-height: 64px;
+}
+
+.district-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.district-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.district-list li[aria-busy='true'] {
+  opacity: 0.6;
+}
+
+.district-list__name {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+}
+
+.district-list__name small {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.district-list__dir {
+  width: 120px;
+  flex: none;
+}
+
+.district-list__dir select {
+  min-height: 44px;
+  font-size: 15px;
+}
+
+.district-list__delete {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border: 1.5px solid #f3c2bd;
+  border-radius: 12px;
+  background: var(--surface);
+  color: #b42318;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}

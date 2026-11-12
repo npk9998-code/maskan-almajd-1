@@ -2,7 +2,7 @@ import OffersBrowser from '@/components/OffersBrowser';
 import SiteHeader from '@/components/SiteHeader';
 import { isNew } from '@/lib/format';
 import { getPublicOffers, getVisibleCities } from '@/lib/offers';
-import { getWhatsAppNumber } from '@/lib/site';
+import { getSiteUrl, getWhatsAppNumber } from '@/lib/site';
 
 // الصفحة تتحدث من قاعدة البيانات كل دقيقة
 export const revalidate = 60;
@@ -43,6 +43,7 @@ export default async function HomePage() {
           offers={offers.map(toCardData)}
           cities={cities}
           whatsappNumber={getWhatsAppNumber()}
+          siteUrl={getSiteUrl()}
         />
       </main>
     </>

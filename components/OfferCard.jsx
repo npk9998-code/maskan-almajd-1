@@ -28,7 +28,7 @@ function CardSpecs({ offer }) {
   );
 }
 
-export default function OfferCard({ offer, priority = false }) {
+export default function OfferCard({ offer, priority = false, whatsappHref }) {
   const href = `/offers/${offer.id}`;
   const price = priceInfo(offer);
   const hasImage = Boolean(offer.image);
@@ -76,13 +76,17 @@ export default function OfferCard({ offer, priority = false }) {
             <Link href={href} className="btn btn--outline" aria-label={`تفاصيل العرض رقم ${offer.id}`}>
               التفاصيل
             </Link>
-            <button
-              type="button"
-              className="btn btn--wa btn--icon"
-              aria-label={`تواصل عبر واتساب عن العرض رقم ${offer.id}`}
-            >
-              <ChatIcon />
-            </button>
+            {whatsappHref ? (
+              <a
+                href={whatsappHref}
+                className="btn btn--wa btn--icon"
+                aria-label={`تواصل عبر واتساب عن العرض رقم ${offer.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <ChatIcon />
+              </a>
+            ) : null}
           </div>
         </div>
       </div>

@@ -8,6 +8,7 @@ import {
   TYPE_FILTERS,
   formatNumber,
   normalizeArabic,
+  offerWhatsappText,
   requestMessage,
   resultsHeading,
   whatsappLink,
@@ -42,17 +43,22 @@ function NoResults({ href, hasFilters, onReset }) {
   );
 }
 
-function OfferGrid({ offers, priorityFirst }) {
+function OfferGrid({ offers, priorityFirst, whatsappNumber, siteUrl }) {
   return (
     <div className="grid">
       {offers.map((offer, i) => (
-        <OfferCard key={offer.id} offer={offer} priority={priorityFirst && i < 2} />
+        <OfferCard
+          key={offer.id}
+          offer={offer}
+          priority={priorityFirst && i < 2}
+          whatsappHref={whatsappLink(whatsappNumber, offerWhatsappText(offer, siteUrl))}
+        />
       ))}
     </div>
   );
 }
 
-export default function OffersBrowser({ offers, cities, whatsappNumber }) {
+export default function OffersBrowser({ offers, cities, whatsappNumber, siteUrl }) {
   const [query, setQuery] = useState('');
   const [direction, setDirection] = useState(null);
   const [type, setType] = useState('all');
@@ -196,7 +202,7 @@ export default function OffersBrowser({ offers, cities, whatsappNumber }) {
         </p>
 
         {main.length > 0 ? (
-          <OfferGrid offers={main} priorityFirst />
+          <OfferGrid offers={main} priorityFirst whatsappNumber={whatsappNumber} siteUrl={siteUrl} />
         ) : near.length > 0 ? (
           <p className="empty empty--inline">ما فيه عروض داخل ميزانيتك، شوف المقاربة لها تحت.</p>
         ) : (
@@ -212,7 +218,7 @@ export default function OffersBrowser({ offers, cities, whatsappNumber }) {
             <div className="divider" role="separator">
               <span>مقارب لميزانيتك</span>
             </div>
-            <OfferGrid offers={near} />
+            <OfferGrid offers={near} whatsappNumber={whatsappNumber} siteUrl={siteUrl} />
           </>
         ) : null}
       </section>

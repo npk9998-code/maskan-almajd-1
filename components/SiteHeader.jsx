@@ -1,8 +1,10 @@
 import Link from 'next/link';
 import { ChatIcon, HouseIcon } from '@/components/Icons';
-import { SITE } from '@/lib/site';
+import { GENERAL_WHATSAPP_TEXT, whatsappLink } from '@/lib/format';
+import { SITE, getWhatsAppNumber } from '@/lib/site';
 
 export default function SiteHeader() {
+  const href = whatsappLink(getWhatsAppNumber(), GENERAL_WHATSAPP_TEXT);
   return (
     <header className="site-header">
       <div className="container site-header__inner">
@@ -16,9 +18,11 @@ export default function SiteHeader() {
             <span className="brand__tagline">{SITE.tagline}</span>
           </span>
         </Link>
-        <button type="button" className="btn btn--wa btn--icon" aria-label="تواصل معي عبر واتساب">
-          <ChatIcon />
-        </button>
+        {href ? (
+          <a href={href} className="btn btn--wa btn--icon" aria-label="تواصل معي عبر واتساب" target="_blank" rel="noopener noreferrer">
+            <ChatIcon />
+          </a>
+        ) : null}
       </div>
     </header>
   );
