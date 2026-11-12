@@ -23,7 +23,7 @@ create table if not exists private.admin_login_state (
 );
 insert into private.admin_login_state (id) values (1) on conflict do nothing;
 
--- فحص الرمز: ٥ محاولات غلط = قفل ١٥ دقيقة
+-- فحص الرمز: ٥ محاولات غلط = قفل ٥ دقايق
 create or replace function public.admin_check_pin(p_pin text)
 returns jsonb
 language plpgsql
@@ -55,9 +55,9 @@ begin
 
   if v_state.failed_count + 1 >= v_max then
     update private.admin_login_state
-       set failed_count = 0, locked_until = now() + interval '15 minutes'
+       set failed_count = 0, locked_until = now() + interval '5 minutes'
      where id = 1;
-    return jsonb_build_object('ok', false, 'locked', true, 'retry_after_seconds', 900);
+    return jsonb_build_object('ok', false, 'locked', true, 'retry_after_seconds', 300);
   end if;
 
   update private.admin_login_state set failed_count = v_state.failed_count + 1 where id = 1;
