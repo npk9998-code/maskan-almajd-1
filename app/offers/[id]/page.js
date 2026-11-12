@@ -19,9 +19,24 @@ export async function generateMetadata({ params }) {
   const { id } = await params;
   const offer = await getPublicOffer(id);
   if (!offer) return { title: 'العرض غير موجود' };
+  const title = `${offerTitle(offer)} في حي ${offer.district} — رقم ${offer.id}`;
+  const price = priceInfo(offer);
+  const description = [
+    `${offer.city}، حي ${offer.district}`,
+    offer.area ? `${offer.area} م²` : null,
+    price.text + (price.note ? ` (${price.note})` : ''),
+  ]
+    .filter(Boolean)
+    .join(' · ');
+  // صورة العرض (واتساب ما يقرا SVG، فالصور التجريبية تاخذ الصورة العامة)
+  const photo = offer.images.find((img) => img.full && !img.full.endsWith('.svg'))?.full;
+  const images = photo ? [{ url: photo, alt: title }] : [{ url: '/og.jpg', width: 1200, height: 630, alt: title }];
   return {
-    title: `${offerTitle(offer)} في حي ${offer.district} — رقم ${offer.id}`,
-    description: `${offerTitle(offer)} في ${offer.city}، حي ${offer.district}. تواصل عبر واتساب للتفاصيل.`,
+    title,
+    description,
+    alternates: { canonical: `/offers/${offer.id}` },
+    openGraph: { type: 'article', title, description, url: `/offers/${offer.id}`, images },
+    twitter: { card: 'summary_large_image', title, description, images: images.map((i) => i.url) },
   };
 }
 
