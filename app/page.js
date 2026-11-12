@@ -1,10 +1,13 @@
 import OffersBrowser from '@/components/OffersBrowser';
 import SiteHeader from '@/components/SiteHeader';
 import { isNew } from '@/lib/format';
-import { OFFERS } from '@/lib/sample-offers';
-import { VISIBLE_CITIES } from '@/lib/site';
+import { getPublicOffers, getVisibleCities } from '@/lib/offers';
+import { getWhatsAppNumber } from '@/lib/site';
 
-// نرسل للمتصفح بس اللي يحتاجه الكرت، والسعر المخفي ما يطلع أبداً
+// الصفحة تتحدث من قاعدة البيانات كل دقيقة
+export const revalidate = 60;
+
+// نرسل للمتصفح بس اللي يحتاجه الكرت
 function toCardData(offer) {
   return {
     id: offer.id,
@@ -12,21 +15,21 @@ function toCardData(offer) {
     city: offer.city,
     district: offer.district,
     direction: offer.direction,
-    price: offer.priceDisplay === 'hidden' ? null : offer.price,
+    price: offer.price,
     priceDisplay: offer.priceDisplay,
     area: offer.area,
-    rooms: offer.rooms ?? null,
-    bathrooms: offer.bathrooms ?? null,
-    facade: offer.facade ?? null,
-    streetWidth: offer.streetWidth ?? null,
+    rooms: offer.rooms,
+    bathrooms: offer.bathrooms,
+    facade: offer.facade,
+    streetWidth: offer.streetWidth,
     status: offer.status,
     isNew: isNew(offer),
-    images: offer.images.slice(0, 1),
+    image: offer.images[0]?.thumb ?? null,
   };
 }
 
-export default function HomePage() {
-  const offers = OFFERS.filter((o) => VISIBLE_CITIES.includes(o.city)).map(toCardData);
+export default async function HomePage() {
+  const [offers, cities] = await Promise.all([getPublicOffers(), getVisibleCities()]);
 
   return (
     <>
@@ -36,7 +39,11 @@ export default function HomePage() {
           <h1>عروض عقارية مختارة</h1>
           <p>تصفّح العروض وتواصل معي مباشرة لأي استفسار</p>
         </div>
-        <OffersBrowser offers={offers} cities={VISIBLE_CITIES} />
+        <OffersBrowser
+          offers={offers.map(toCardData)}
+          cities={cities}
+          whatsappNumber={getWhatsAppNumber()}
+        />
       </main>
     </>
   );

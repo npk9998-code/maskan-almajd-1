@@ -7,18 +7,18 @@ function CardSpecs({ offer }) {
   const items =
     offer.type === 'land'
       ? [
-          { Icon: AreaIcon, text: areaText(offer.area) },
-          { Icon: RoadIcon, text: `شارع ${offer.streetWidth} م` },
+          { Icon: AreaIcon, text: offer.area ? areaText(offer.area) : null },
+          { Icon: RoadIcon, text: offer.streetWidth ? `شارع ${offer.streetWidth} م` : null },
           { Icon: CompassIcon, text: offer.facade },
         ]
       : [
-          { Icon: AreaIcon, text: areaText(offer.area) },
-          { Icon: BedIcon, text: roomsText(offer.rooms) },
-          { Icon: BathIcon, text: bathsText(offer.bathrooms) },
+          { Icon: AreaIcon, text: offer.area ? areaText(offer.area) : null },
+          { Icon: BedIcon, text: offer.rooms != null ? roomsText(offer.rooms) : null },
+          { Icon: BathIcon, text: offer.bathrooms != null ? bathsText(offer.bathrooms) : null },
         ];
   return (
     <ul className="card__specs">
-      {items.map(({ Icon, text }) => (
+      {items.filter((item) => item.text).map(({ Icon, text }) => (
         <li key={text}>
           <Icon className="icon-sm" />
           <span>{text}</span>
@@ -31,7 +31,7 @@ function CardSpecs({ offer }) {
 export default function OfferCard({ offer, priority = false }) {
   const href = `/offers/${offer.id}`;
   const price = priceInfo(offer);
-  const hasImage = offer.images.length > 0;
+  const hasImage = Boolean(offer.image);
   const title = offerTitle(offer);
 
   return (
@@ -39,7 +39,7 @@ export default function OfferCard({ offer, priority = false }) {
       <Link href={href} className="card__media" tabIndex={-1} aria-hidden="true">
         {hasImage ? (
           <img
-            src={offer.images[0]}
+            src={offer.image}
             alt=""
             width={640}
             height={400}

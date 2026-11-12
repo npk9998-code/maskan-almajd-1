@@ -4,20 +4,20 @@ import Gallery from '@/components/Gallery';
 import { ChatIcon, ChevronIcon, LockIcon, PinIcon, ShareIcon } from '@/components/Icons';
 import { NumberBadge, OfferCover, StatusBadge, Watermark } from '@/components/OfferMedia';
 import { isNew, offerLocation, offerSpecs, offerTitle, priceInfo } from '@/lib/format';
-import { OFFERS, getOffer } from '@/lib/sample-offers';
-import { SITE, VISIBLE_CITIES } from '@/lib/site';
+import { getPublicOffer } from '@/lib/offers';
+import { SITE } from '@/lib/site';
 
-// كل الصفحات تتجهز وقت البناء (ما تستهلك نقاط تشغيل)
-export const dynamicParams = false;
+// كل صفحة عرض تتجهز أول مرة تنفتح، وتتحدث من قاعدة البيانات كل دقيقة
+export const revalidate = 60;
 
 export function generateStaticParams() {
-  return OFFERS.filter((o) => VISIBLE_CITIES.includes(o.city)).map((o) => ({ id: String(o.id) }));
+  return [];
 }
 
 export async function generateMetadata({ params }) {
   const { id } = await params;
-  const offer = getOffer(id);
-  if (!offer) return {};
+  const offer = await getPublicOffer(id);
+  if (!offer) return { title: 'العرض غير موجود' };
   return {
     title: `${offerTitle(offer)} في حي ${offer.district} — رقم ${offer.id}`,
     description: `${offerTitle(offer)} في ${offer.city}، حي ${offer.district}. تواصل عبر واتساب للتفاصيل.`,
@@ -26,8 +26,8 @@ export async function generateMetadata({ params }) {
 
 export default async function OfferPage({ params }) {
   const { id } = await params;
-  const offer = getOffer(id);
-  if (!offer || !VISIBLE_CITIES.includes(offer.city)) notFound();
+  const offer = await getPublicOffer(id);
+  if (!offer) notFound();
 
   const title = offerTitle(offer);
   const price = priceInfo(offer);
@@ -40,7 +40,7 @@ export default async function OfferPage({ params }) {
       <main className="details">
         <div className={hasImages ? 'gallery' : 'gallery gallery--cover'}>
           {hasImages ? (
-            <Gallery images={offer.images} label={`صور ${title} في حي ${offer.district}`} />
+            <Gallery images={offer.images.map((img) => img.full)} label={`صور ${title} في حي ${offer.district}`} />
           ) : (
             <OfferCover offer={offer} size="hero" />
           )}

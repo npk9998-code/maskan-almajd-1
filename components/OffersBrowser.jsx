@@ -2,10 +2,45 @@
 
 import { useDeferredValue, useMemo, useState } from 'react';
 import OfferCard from '@/components/OfferCard';
-import { ChevronDownIcon, SearchIcon } from '@/components/Icons';
-import { DIRECTIONS, TYPE_FILTERS, formatNumber, normalizeArabic, resultsHeading } from '@/lib/format';
+import { ChatIcon, ChevronDownIcon, SearchIcon } from '@/components/Icons';
+import {
+  DIRECTIONS,
+  TYPE_FILTERS,
+  formatNumber,
+  normalizeArabic,
+  requestMessage,
+  resultsHeading,
+  whatsappLink,
+} from '@/lib/format';
 
 const NEAR_BUDGET_RATIO = 1.3; // مقارب لميزانيتك: لين 30% أغلى
+
+function NoResults({ href, hasFilters, onReset }) {
+  return (
+    <div className="no-results">
+      <p className="no-results__title">ما لقيت طلبك؟ تواصل معي</p>
+      <p className="no-results__text">قل لي وش تدور عليه، وأبلغك أول ما يتوفر عرض يناسبك.</p>
+      <div className="no-results__actions">
+        {href ? (
+          <a href={href} className="btn btn--wa" target="_blank" rel="noopener noreferrer">
+            <ChatIcon />
+            <span>تواصل معي عبر واتساب</span>
+          </a>
+        ) : (
+          <button type="button" className="btn btn--wa">
+            <ChatIcon />
+            <span>تواصل معي عبر واتساب</span>
+          </button>
+        )}
+        {hasFilters ? (
+          <button type="button" className="btn btn--outline" onClick={onReset}>
+            مسح الفلاتر
+          </button>
+        ) : null}
+      </div>
+    </div>
+  );
+}
 
 function OfferGrid({ offers, priorityFirst }) {
   return (
@@ -17,7 +52,7 @@ function OfferGrid({ offers, priorityFirst }) {
   );
 }
 
-export default function OffersBrowser({ offers, cities }) {
+export default function OffersBrowser({ offers, cities, whatsappNumber }) {
   const [query, setQuery] = useState('');
   const [direction, setDirection] = useState(null);
   const [type, setType] = useState('all');
@@ -165,14 +200,11 @@ export default function OffersBrowser({ offers, cities }) {
         ) : near.length > 0 ? (
           <p className="empty empty--inline">ما فيه عروض داخل ميزانيتك، شوف المقاربة لها تحت.</p>
         ) : (
-          <div className="empty">
-            <p>ما لقينا عروض تطابق بحثك.</p>
-            {hasFilters ? (
-              <button type="button" className="btn btn--outline" onClick={resetFilters}>
-                مسح الفلاتر
-              </button>
-            ) : null}
-          </div>
+          <NoResults
+            href={whatsappLink(whatsappNumber, requestMessage({ query, direction, type, city, budget }))}
+            hasFilters={Boolean(hasFilters)}
+            onReset={resetFilters}
+          />
         )}
 
         {near.length > 0 ? (

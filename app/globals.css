@@ -484,6 +484,35 @@ a {
   text-align: start;
 }
 
+.no-results {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 36px 20px;
+  text-align: center;
+  background: var(--surface);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-lg);
+}
+
+.no-results__title {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.no-results__text {
+  color: var(--muted);
+  max-width: 34ch;
+}
+
+.no-results__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
 /* ===== كرت العرض ===== */
 .card {
   background: var(--surface);
