@@ -48,6 +48,7 @@ export default async function EditOfferPage({ params }) {
         image_path: img.image_path,
         thumb_path: img.thumb_path,
         preview: imageUrl(img.thumb_path ?? img.image_path),
+        fullPreview: imageUrl(img.image_path),
         saved: true,
       })),
   };

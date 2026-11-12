@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { uploadOfferImage } from '@/app/admin/offer-actions';
 import { ChevronIcon } from '@/components/Icons';
 import { processImage } from '@/lib/admin/image-processing';
@@ -17,8 +17,69 @@ function UploadIcon() {
 }
 
 // الصور: رفع أكثر من صورة، حذف، وتغيير الترتيب (الأولى = الغلاف)
+// عرض الصورة كاملة لما تضغط عليها
+function Lightbox({ images, index, onClose, onNavigate }) {
+  const img = images[index];
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === 'Escape') onClose();
+      else if (e.key === 'ArrowLeft') onNavigate(1);
+      else if (e.key === 'ArrowRight') onNavigate(-1);
+    };
+    window.addEventListener('keydown', onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [onClose, onNavigate]);
+
+  if (!img) return null;
+  return (
+    <div className="lightbox" role="dialog" aria-modal="true" aria-label={`الصورة ${index + 1} من ${images.length}`} onClick={onClose}>
+      <img src={img.fullPreview ?? img.preview} alt={`الصورة ${index + 1}`} onClick={(e) => e.stopPropagation()} />
+      <button type="button" className="lightbox__close" onClick={onClose} aria-label="إغلاق">
+        ×
+      </button>
+      <span className="lightbox__count tabular">
+        {index + 1} / {images.length}
+      </span>
+      {images.length > 1 ? (
+        <>
+          <button
+            type="button"
+            className="lightbox__nav lightbox__nav--prev"
+            onClick={(e) => {
+              e.stopPropagation();
+              onNavigate(-1);
+            }}
+            disabled={index === 0}
+            aria-label="الصورة السابقة"
+          >
+            <ChevronIcon />
+          </button>
+          <button
+            type="button"
+            className="lightbox__nav lightbox__nav--next"
+            onClick={(e) => {
+              e.stopPropagation();
+              onNavigate(1);
+            }}
+            disabled={index === images.length - 1}
+            aria-label="الصورة التالية"
+          >
+            <ChevronIcon style={{ rotate: '180deg' }} />
+          </button>
+        </>
+      ) : null}
+    </div>
+  );
+}
+
 export default function ImagePicker({ images, onChange, onRemoveSaved, onBusyChange }) {
   const inputRef = useRef(null);
+  const [viewing, setViewing] = useState(null);
   const [pending, setPending] = useState(0);
   const [error, setError] = useState('');
 
@@ -39,13 +100,13 @@ export default function ImagePicker({ images, onChange, onRemoveSaved, onBusyCha
     // نرفعها وحدة وحدة عشان ما نثقل الجوال
     for (const file of files) {
       try {
-        const { full, thumb, previewUrl } = await processImage(file, SITE.shortName);
+        const { full, thumb, previewUrl, fullUrl } = await processImage(file, SITE.shortName);
         const fd = new FormData();
         fd.append('full', full);
         fd.append('thumb', thumb);
         const result = await uploadOfferImage(fd);
         if (!result?.ok) throw new Error(result?.message);
-        onChange((list) => [...list, { ...result.image, preview: previewUrl, saved: false }]);
+        onChange((list) => [...list, { ...result.image, preview: previewUrl, fullPreview: fullUrl, saved: false }]);
       } catch (err) {
         setError(err?.message || 'ما قدرت أرفع إحدى الصور');
       } finally {
@@ -85,7 +146,9 @@ export default function ImagePicker({ images, onChange, onRemoveSaved, onBusyCha
         </button>
         {images.map((img, i) => (
           <figure key={img.image_path} className="images__item">
-            <img src={img.preview} alt={`صورة ${i + 1}`} width={160} height={120} decoding="async" />
+            <button type="button" className="images__view" onClick={() => setViewing(i)} aria-label={`عرض الصورة ${i + 1}`}>
+              <img src={img.preview} alt="" width={160} height={120} decoding="async" />
+            </button>
             {i === 0 ? <span className="images__badge">الغلاف</span> : null}
             <button
               type="button"
@@ -111,6 +174,14 @@ export default function ImagePicker({ images, onChange, onRemoveSaved, onBusyCha
           </figure>
         ))}
       </div>
+      {viewing != null ? (
+        <Lightbox
+          images={images}
+          index={viewing}
+          onClose={() => setViewing(null)}
+          onNavigate={(d) => setViewing((i) => Math.min(Math.max(i + d, 0), images.length - 1))}
+        />
+      ) : null}
       <input
         ref={inputRef}
         type="file"
