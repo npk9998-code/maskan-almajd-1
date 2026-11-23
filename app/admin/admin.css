@@ -1135,3 +1135,107 @@
   color: var(--primary);
   font-weight: 600;
 }
+
+/* ---- إحصائيات العرض ---- */
+.admin-stats-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin-top: 10px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: var(--bg);
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.admin-stats-line span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.admin-card__actions--share {
+  grid-template-columns: 1fr 1fr 1fr var(--tap);
+}
+
+.admin-filters--3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+/* ---- الأرشيف ---- */
+.archive {
+  display: grid;
+  gap: 12px;
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1.5px dashed var(--border-strong);
+}
+
+.archive__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 52px;
+  padding: 0 16px;
+  border: 1.5px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.archive__toggle.is-open {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.archive__chevron {
+  width: 20px;
+  height: 20px;
+  transition: rotate 0.2s;
+}
+
+.archive__toggle.is-open .archive__chevron {
+  rotate: 180deg;
+}
+
+/* ---- خيار سعر المتر ---- */
+.check-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  cursor: pointer;
+}
+
+.check-row input {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  margin: 0;
+  accent-color: var(--primary);
+}
+
+.check-row span {
+  display: grid;
+}
+
+.check-row strong {
+  font-size: 15px;
+}
+
+.check-row small {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.check-row.is-disabled {
+  opacity: 0.6;
+  cursor: default;
+}

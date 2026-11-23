@@ -103,6 +103,7 @@ function buildRow(input) {
       district_id: districtId,
       price,
       price_display: priceDisplay,
+      show_price_per_meter: Boolean(input.showPricePerMeter) && priceDisplay !== 'hidden',
       area,
       rooms: isLand ? null : toInt(input.rooms),
       bathrooms: isLand ? null : toInt(input.bathrooms),

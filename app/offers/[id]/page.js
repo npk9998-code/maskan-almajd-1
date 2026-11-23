@@ -1,11 +1,14 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import FavButton from '@/components/FavButton';
 import Gallery from '@/components/Gallery';
+import ViewTracker from '@/components/ViewTracker';
+import WhatsAppLink from '@/components/WhatsAppLink';
 import ShareButton from '@/components/ShareButton';
 import { ChatIcon, ChevronIcon, LockIcon, PinIcon } from '@/components/Icons';
 import { NumberBadge, OfferCover, StatusBadge, Watermark } from '@/components/OfferMedia';
 import SimilarOffers from '@/components/SimilarOffers';
-import { isNew, offerHeading, offerSpecs, offerSubtitle, offerTitle, offerWhatsappText, priceInfo, whatsappLink } from '@/lib/format';
+import { isNew, offerHeading, offerSpecs, offerSubtitle, offerTitle, offerWhatsappText, priceInfo, pricePerMeter, whatsappLink } from '@/lib/format';
 import { getPublicOffer, getPublicOffers } from '@/lib/offers';
 import { pickSimilar } from '@/lib/similar';
 import { getFalLicense, getSiteUrl, getWhatsAppNumber } from '@/lib/site';
@@ -58,6 +61,7 @@ export default async function OfferPage({ params }) {
 
   return (
     <>
+      <ViewTracker id={offer.id} />
       <main className="details">
         <div className={hasImages ? 'gallery' : 'gallery gallery--cover'}>
           {hasImages ? (
@@ -69,7 +73,10 @@ export default async function OfferPage({ params }) {
             <Link href="/" className="icon-btn" aria-label="رجوع للعروض">
               <ChevronIcon />
             </Link>
-            <NumberBadge id={offer.id} />
+            <div className="gallery__top-end">
+              <NumberBadge id={offer.id} />
+              <FavButton id={offer.id} className="icon-btn fav-icon-btn" />
+            </div>
           </div>
           {hasImages ? null : <Watermark onCover />}
         </div>
@@ -89,6 +96,7 @@ export default async function OfferPage({ params }) {
             {price.text}
           </p>
           {price.note ? <p className="price__note">{price.note}</p> : null}
+          {pricePerMeter(offer) ? <p className="price__ppm tabular">{pricePerMeter(offer)}</p> : null}
 
           <dl className="specs">
             {specs.map((s) => (
@@ -141,10 +149,10 @@ export default async function OfferPage({ params }) {
       <div className="bottom-bar">
         <div className="container bottom-bar__inner">
           {whatsappHref ? (
-            <a href={whatsappHref} className="btn btn--wa btn--lg bottom-bar__main" target="_blank" rel="noopener noreferrer">
+            <WhatsAppLink offerId={offer.id} href={whatsappHref} className="btn btn--wa btn--lg bottom-bar__main">
               <ChatIcon />
               <span>تواصل معي عبر واتساب</span>
-            </a>
+            </WhatsAppLink>
           ) : null}
           <ShareButton
             url={`${siteUrl}/offers/${offer.id}`}

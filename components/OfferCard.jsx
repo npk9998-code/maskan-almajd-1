@@ -1,7 +1,9 @@
 import Link from 'next/link';
+import FavButton from '@/components/FavButton';
 import { AreaIcon, BathIcon, BedIcon, ChatIcon, CompassIcon, PinIcon, RoadIcon } from '@/components/Icons';
 import { NumberBadge, OfferCover, StatusBadge, Watermark } from '@/components/OfferMedia';
-import { areaText, bathsText, offerHeading, offerSubtitle, priceInfo, roomsText } from '@/lib/format';
+import WhatsAppLink from '@/components/WhatsAppLink';
+import { areaText, bathsText, offerHeading, offerSubtitle, priceInfo, pricePerMeter, roomsText } from '@/lib/format';
 
 function CardSpecs({ offer }) {
   const items =
@@ -43,9 +45,11 @@ export default function OfferCard({ offer, priority = false, whatsappHref }) {
   const price = priceInfo(offer);
   const hasImage = Boolean(offer.image);
   const title = offerHeading(offer);
+  const ppm = pricePerMeter(offer);
 
   return (
     <article className={offer.status === 'sold' ? 'card card--sold' : 'card'}>
+      <div className="card__media-wrap">
       <Link href={href} className="card__media" tabIndex={-1} aria-hidden="true">
         {hasImage ? (
           <img
@@ -66,6 +70,8 @@ export default function OfferCard({ offer, priority = false, whatsappHref }) {
         </span>
         {hasImage ? null : <Watermark onCover />}
       </Link>
+      <FavButton id={offer.id} />
+      </div>
 
       <div className="card__body">
         <h3 className="card__title">{title}</h3>
@@ -81,21 +87,21 @@ export default function OfferCard({ offer, priority = false, whatsappHref }) {
               {price.text}
             </p>
             {price.note ? <p className="price__note">{price.note}</p> : null}
+            {ppm ? <p className="price__ppm tabular">{ppm}</p> : null}
           </div>
           <div className="card__actions">
             <Link href={href} className="btn btn--outline" aria-label={`تفاصيل العرض رقم ${offer.id}`}>
               التفاصيل
             </Link>
             {whatsappHref ? (
-              <a
+              <WhatsAppLink
+                offerId={offer.id}
                 href={whatsappHref}
                 className="btn btn--wa btn--icon"
-                aria-label={`تواصل عبر واتساب عن العرض رقم ${offer.id}`}
-                target="_blank"
-                rel="noopener noreferrer"
+                label={`تواصل عبر واتساب عن العرض رقم ${offer.id}`}
               >
                 <ChatIcon />
-              </a>
+              </WhatsAppLink>
             ) : null}
           </div>
         </div>

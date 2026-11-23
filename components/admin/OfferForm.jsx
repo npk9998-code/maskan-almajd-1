@@ -38,6 +38,7 @@ const EMPTY = {
   districtId: '',
   price: '',
   priceDisplay: 'show',
+  showPricePerMeter: false,
   area: '',
   rooms: '',
   bathrooms: '',
@@ -321,6 +322,24 @@ export default function OfferForm({ cities, districts, usedTypes = [], initial }
               </label>
             ))}
           </fieldset>
+          <label className={form.priceDisplay === 'hidden' ? 'check-row is-disabled' : 'check-row'}>
+            <input
+              type="checkbox"
+              checked={form.showPricePerMeter && form.priceDisplay !== 'hidden'}
+              disabled={form.priceDisplay === 'hidden'}
+              onChange={(e) => setForm((f) => ({ ...f, showPricePerMeter: e.target.checked }))}
+            />
+            <span>
+              <strong>إظهار سعر المتر</strong>
+              <small className="tabular">
+                {form.priceDisplay === 'hidden'
+                  ? 'ما يطلع لأن السعر مخفي'
+                  : form.price && Number(form.area) > 0
+                    ? `يطلع للعميل: ${formatNumber(Math.round(Number(form.price) / Number(form.area)))} ريال/م²`
+                    : 'يتحسب لحاله من السعر والمساحة'}
+              </small>
+            </span>
+          </label>
         </Section>
 
         <Section title={<h2>المواصفات</h2>}>

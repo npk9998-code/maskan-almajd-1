@@ -18,6 +18,7 @@ function toCardData(offer) {
     direction: offer.direction,
     price: offer.price,
     priceDisplay: offer.priceDisplay,
+    showPricePerMeter: offer.showPricePerMeter,
     area: offer.area,
     rooms: offer.rooms,
     bathrooms: offer.bathrooms,

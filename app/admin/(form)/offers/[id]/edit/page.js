@@ -8,7 +8,7 @@ import { imageUrl } from '@/lib/supabase';
 export const metadata = { title: 'تعديل العرض' };
 
 const COLUMNS =
-  'id,property_type,custom_type,district_id,price,price_display,area,rooms,bathrooms,property_age_years,facade,street_width,floor,features,description,ad_license_number,status,district:districts(city_id),images:listing_images(image_path,thumb_path,sort_order),note:private_notes(notes)';
+  'id,property_type,custom_type,district_id,price,price_display,show_price_per_meter,area,rooms,bathrooms,property_age_years,facade,street_width,floor,features,description,ad_license_number,status,district:districts(city_id),images:listing_images(image_path,thumb_path,sort_order),note:private_notes(notes)';
 
 export default async function EditOfferPage({ params }) {
   const { id } = await params;
@@ -31,6 +31,7 @@ export default async function EditOfferPage({ params }) {
     districtId: r.district_id,
     price: r.price == null ? '' : String(Math.round(Number(r.price))),
     priceDisplay: r.price_display,
+    showPricePerMeter: Boolean(r.show_price_per_meter),
     area: r.area == null ? '' : String(Number(r.area)),
     rooms: r.rooms ?? '',
     bathrooms: r.bathrooms ?? '',

@@ -3,13 +3,14 @@
 import Link from 'next/link';
 import { useDeferredValue, useMemo, useOptimistic, useState, useTransition } from 'react';
 import { setListingStatus } from '@/app/admin/actions';
-import { SearchIcon, TYPE_ICON } from '@/components/Icons';
+import { ChatIcon, ChevronDownIcon, EyeIcon, SearchIcon, ShareIcon, TYPE_ICON, UserIcon } from '@/components/Icons';
+import { offerShareText } from '@/lib/admin/share-text';
 import { formatNumber, normalizeArabic, offerTitle } from '@/lib/format';
 
+// الفلاتر للعروض الظاهرة (المخفية في الأرشيف تحت)
 const FILTERS = [
   { key: 'all', label: 'الكل' },
   { key: 'available', label: 'معروض' },
-  { key: 'hidden', label: 'مخفي' },
   { key: 'sold', label: 'تم البيع' },
 ];
 
@@ -26,7 +27,48 @@ function priceLine(o) {
   return o.priceDisplay === 'negotiable' ? `${base} · قابل للتفاوض` : base;
 }
 
-function OfferRow({ offer, onStatus, busy }) {
+function Stats({ stats }) {
+  return (
+    <p className="admin-stats-line tabular" aria-label="إحصائيات العرض">
+      <span title="الأشخاص (كل جهاز مرة)">
+        <UserIcon className="icon-xs" /> {stats.people} شخص
+      </span>
+      <span title="كل مرات الفتح">
+        <EyeIcon className="icon-xs" /> {stats.views} مشاهدة
+      </span>
+      <span title="ضغطوا واتساب (كل جهاز مرة)">
+        <ChatIcon className="icon-xs" /> {stats.whatsapp} واتساب
+      </span>
+    </p>
+  );
+}
+
+function ShareOffer({ offer, siteUrl, onCopied }) {
+  const share = async () => {
+    const text = offerShareText(offer, siteUrl);
+    if (navigator.share) {
+      try {
+        await navigator.share({ text });
+      } catch {
+        // قفل القائمة
+      }
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+      onCopied();
+    } catch {
+      window.prompt('انسخ الرسالة:', text);
+    }
+  };
+  return (
+    <button type="button" className="btn btn--outline btn--icon" onClick={share} aria-label={`مشاركة العرض رقم ${offer.id}`}>
+      <ShareIcon />
+    </button>
+  );
+}
+
+function OfferRow({ offer, onStatus, busy, siteUrl, onCopied }) {
   const Icon = TYPE_ICON[offer.type];
   const chip = STATUS_CHIP[offer.status];
   const hidden = offer.status === 'hidden';
@@ -54,7 +96,9 @@ function OfferRow({ offer, onStatus, busy }) {
         </div>
       </div>
 
-      <div className="admin-card__actions">
+      <Stats stats={offer.stats} />
+
+      <div className={hidden ? 'admin-card__actions' : 'admin-card__actions admin-card__actions--share'}>
         <Link href={`/admin/offers/${offer.id}/edit`} className="btn btn--outline">
           تعديل
         </Link>
@@ -74,15 +118,18 @@ function OfferRow({ offer, onStatus, busy }) {
         >
           {sold ? 'إرجاع للعرض' : 'تم البيع'}
         </button>
+        {hidden ? null : <ShareOffer offer={offer} siteUrl={siteUrl} onCopied={onCopied} />}
       </div>
     </article>
   );
 }
 
-export default function MyOffers({ offers }) {
+export default function MyOffers({ offers, siteUrl }) {
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState('all');
+  const [archiveOpen, setArchiveOpen] = useState(false);
   const [error, setError] = useState('');
+  const [copied, setCopied] = useState(false);
   const [busyId, setBusyId] = useState(null);
   const [, startTransition] = useTransition();
   const [optimistic, applyOptimistic] = useOptimistic(offers, (list, { id, status }) =>
@@ -97,15 +144,26 @@ export default function MyOffers({ offers }) {
     return c;
   }, [optimistic]);
 
-  const visible = useMemo(() => {
+  const { visible, archived } = useMemo(() => {
     const q = normalizeArabic(deferredQuery.trim());
-    return optimistic.filter((o) => {
-      if (filter !== 'all' && o.status !== filter) return false;
+    const matches = (o) => {
       if (!q) return true;
       if (/^\d+$/.test(q)) return String(o.id).includes(q);
-      return normalizeArabic(`${o.district} ${o.city}`).includes(q);
-    });
+      return normalizeArabic(`${o.district} ${o.city} ${o.customType ?? ''}`).includes(q);
+    };
+    const visible = [];
+    const archived = [];
+    for (const o of optimistic) {
+      if (!matches(o)) continue;
+      if (o.status === 'hidden') archived.push(o);
+      else if (filter === 'all' || o.status === filter) visible.push(o);
+    }
+    return { visible, archived };
   }, [optimistic, deferredQuery, filter]);
+
+  // البحث يفتح الأرشيف تلقائياً إذا لقى فيه نتائج
+  const searching = deferredQuery.trim().length > 0;
+  const showArchive = archiveOpen || (searching && archived.length > 0);
 
   const changeStatus = (id, status) => {
     setError('');
@@ -117,6 +175,13 @@ export default function MyOffers({ offers }) {
       setBusyId(null);
     });
   };
+
+  const onCopied = () => {
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const rowProps = { onStatus: changeStatus, siteUrl, onCopied };
 
   return (
     <div className="admin-body">
@@ -150,7 +215,7 @@ export default function MyOffers({ offers }) {
         />
       </label>
 
-      <div className="chips admin-filters" role="group" aria-label="فلتر الحالة">
+      <div className="chips admin-filters admin-filters--3" role="group" aria-label="فلتر الحالة">
         {FILTERS.map((f) => {
           const active = filter === f.key;
           return (
@@ -176,12 +241,42 @@ export default function MyOffers({ offers }) {
       {visible.length > 0 ? (
         <div className="admin-list">
           {visible.map((o) => (
-            <OfferRow key={o.id} offer={o} onStatus={changeStatus} busy={busyId === o.id} />
+            <OfferRow key={o.id} offer={o} busy={busyId === o.id} {...rowProps} />
           ))}
         </div>
       ) : (
         <p className="empty">ما فيه عروض هنا.</p>
       )}
+
+      <section className="archive">
+        <button
+          type="button"
+          className={showArchive ? 'archive__toggle is-open' : 'archive__toggle'}
+          aria-expanded={showArchive}
+          aria-controls="archive-list"
+          onClick={() => setArchiveOpen((v) => !v)}
+        >
+          <span>
+            الأرشيف <span className="muted tabular">({searching ? archived.length : counts.hidden})</span>
+          </span>
+          <ChevronDownIcon className="archive__chevron" />
+        </button>
+        {showArchive ? (
+          <div className="admin-list" id="archive-list">
+            {archived.length ? (
+              archived.map((o) => <OfferRow key={o.id} offer={o} busy={busyId === o.id} {...rowProps} />)
+            ) : (
+              <p className="empty">ما فيه عروض مخفية.</p>
+            )}
+          </div>
+        ) : null}
+      </section>
+
+      {copied ? (
+        <span className="toast" role="status">
+          انتسخت رسالة العرض ✓
+        </span>
+      ) : null}
     </div>
   );
 }

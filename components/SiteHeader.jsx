@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import FavoritesHeaderButton from '@/components/FavoritesHeaderButton';
 import { ChatIcon, HouseIcon } from '@/components/Icons';
 import { GENERAL_WHATSAPP_TEXT, whatsappLink } from '@/lib/format';
 import { SITE, getWhatsAppNumber } from '@/lib/site';
@@ -18,11 +19,14 @@ export default function SiteHeader() {
             <span className="brand__tagline">{SITE.tagline}</span>
           </span>
         </Link>
+        <div className="site-header__actions">
+        <FavoritesHeaderButton />
         {href ? (
           <a href={href} className="btn btn--wa btn--icon" aria-label="تواصل معي عبر واتساب" target="_blank" rel="noopener noreferrer">
             <ChatIcon />
           </a>
         ) : null}
+        </div>
       </div>
     </header>
   );
