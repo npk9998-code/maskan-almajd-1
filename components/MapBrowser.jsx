@@ -253,7 +253,7 @@ export default function MapBrowser({ offers, cities, whatsappNumber }) {
     let i = 0;
     for (const [key, shape] of shapes) {
       polys.push(districtFeature(i, shape, { key }));
-      names.push({ type: 'Feature', id: i, properties: { name: shape.name }, geometry: { type: 'Point', coordinates: shape.center } });
+      names.push({ type: 'Feature', id: i, properties: { name: shape.name, key }, geometry: { type: 'Point', coordinates: shape.center } });
       i += 1;
     }
     map.getSource('all')?.setData({ type: 'FeatureCollection', features: polys });
@@ -285,6 +285,10 @@ export default function MapBrowser({ offers, cities, whatsappNumber }) {
       markersRef.current.push(new lib.Marker({ element: el }).setLngLat(shape.center).addTo(map));
     }
     map.getSource('districts')?.setData({ type: 'FeatureCollection', features });
+    // الاسم الرمادي ما يتكرر للأحياء الخضراء
+    if (map.getLayer('a-names')) {
+      map.setFilter('a-names', ['!', ['in', ['get', 'key'], ['literal', features.map((f) => f.properties.key)]]]);
+    }
     map.getSource('offer-names')?.setData({
       type: 'FeatureCollection',
       features: features.map((f) => ({
