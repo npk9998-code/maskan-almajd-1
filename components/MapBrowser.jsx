@@ -2,15 +2,15 @@
 
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import MiniOfferCard from '@/components/MiniOfferCard';
-import SearchFilters from '@/components/SearchFilters';
-import { ChatIcon, CloseIcon } from '@/components/Icons';
+import { ChatIcon, CloseIcon, SearchIcon, SlidersIcon } from '@/components/Icons';
 import { filterOffers } from '@/lib/filter';
-import { normalizeArabic, requestMessage, whatsappLink } from '@/lib/format';
+import { DIRECTIONS, TYPE_FILTERS, formatNumber, normalizeArabic, requestMessage, whatsappLink } from '@/lib/format';
 import { CITY_GEO, MAP_STYLE, districtFeature, districtKey, loadCityShapes, loadMapLibre, ringsBounds } from '@/lib/geo';
 
 const PRIMARY = '#0f5c4d';
 const HINT_KEY = 'mz_map_hint';
 const EMPTY = { type: 'FeatureCollection', features: [] };
+const BOTTOM_TABS = 84;
 
 function countLabel(n) {
   if (n === 0) return 'ما فيه عروض';
@@ -36,6 +36,8 @@ export default function MapBrowser({ offers, cities, whatsappNumber }) {
   const [shapes, setShapes] = useState(null);
   const [mapState, setMapState] = useState('loading'); // loading | ready | error
   const [showHint, setShowHint] = useState(false);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const topRef = useRef(null);
   const deferredQuery = useDeferredValue(query);
 
   const boxRef = useRef(null);
@@ -58,6 +60,8 @@ export default function MapBrowser({ offers, cities, whatsappNumber }) {
       // ما يهم
     }
   };
+
+  const topSpace = () => (topRef.current?.offsetHeight ?? 150) + 24;
 
   // كتابة اسم مدينة في البحث تنقل الخريطة لها
   const onQuery = (value) => {
@@ -133,7 +137,6 @@ export default function MapBrowser({ offers, cities, whatsappNumber }) {
           pitchWithRotate: false,
         });
         map.touchZoomRotate.disableRotation();
-        map.addControl(new lib.NavigationControl({ showCompass: false }), 'top-left');
         map.on('load', () => {
           map.addSource('districts', { type: 'geojson', data: EMPTY });
           map.addSource('selected', { type: 'geojson', data: EMPTY });
@@ -221,7 +224,7 @@ export default function MapBrowser({ offers, cities, whatsappNumber }) {
       fittedCityRef.current = city;
       const withOffers = features.length ? features.map((f) => shapes.get(f.properties.key).rings) : [...shapes.values()].map((s) => s.rings);
       const b = ringsBounds(withOffers);
-      if (b) map.fitBounds(b, { padding: 40, maxZoom: 13, duration: 0 });
+      if (b) map.fitBounds(b, { padding: { top: topSpace(), bottom: BOTTOM_TABS + 30, left: 20, right: 20 }, maxZoom: 13, duration: 0 });
     }
   }, [mapState, shapes, byDistrict, selected, city]);
 
@@ -236,110 +239,190 @@ export default function MapBrowser({ offers, cities, whatsappNumber }) {
     }
     map.getSource('selected')?.setData({ type: 'FeatureCollection', features: [districtFeature(0, selectedShape, {})] });
     const b = ringsBounds([selectedShape.rings]);
-    if (b) map.fitBounds(b, { padding: { top: 40, left: 40, right: 40, bottom: 200 }, maxZoom: 14.5, duration: 600 });
+    if (b) map.fitBounds(b, { padding: { top: topSpace(), left: 30, right: 30, bottom: BOTTOM_TABS + 230 }, maxZoom: 14.5, duration: 600 });
   }, [mapState, selectedShape]);
 
   const selectedOffers = selected ? byDistrict.get(selected) ?? [] : [];
   const districtsWithOffers = shapes ? [...byDistrict.keys()].filter((k) => shapes.has(k)).length : 0;
 
-  return (
-    <>
-      <SearchFilters
-        query={query}
-        onQuery={onQuery}
-        type={type}
-        onType={setType}
-        direction={direction}
-        onDirection={setDirection}
-        budget={budget}
-        onBudget={setBudget}
-        city={city}
-        onCity={pickCity}
-        placeholder="ابحث باسم الحي أو المدينة…"
-      />
+  const advancedCount = [direction, budget].filter(Boolean).length;
+  const onBudgetChange = (e) => {
+    const d = e.target.value.replace(/[^\d٠-٩]/g, '').replace(/[٠-٩]/g, (x) => '٠١٢٣٤٥٦٧٨٩'.indexOf(x));
+    setBudget(d.slice(0, 10));
+  };
 
-      {mapCities.length > 1 ? (
-        <div className="chips map-cities" role="group" aria-label="المدينة">
-          {mapCities.map((c) => {
-            const active = c === city;
-            return (
+  return (
+    <div className="map-full">
+      <div ref={boxRef} className="map-canvas" role="region" aria-label={`خريطة أحياء ${city}`} />
+
+      <div ref={topRef} className="map-float">
+        <div className="map-search">
+          <label className="map-search__field">
+            <SearchIcon className="map-search__icon" />
+            <span className="sr-only">ابحث باسم الحي أو المدينة</span>
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => onQuery(e.target.value)}
+              placeholder="ابحث باسم الحي أو المدينة…"
+              autoComplete="off"
+              enterKeyHint="search"
+              spellCheck={false}
+            />
+          </label>
+          <button
+            type="button"
+            className={advancedOpen || advancedCount ? 'map-search__adv is-active' : 'map-search__adv'}
+            aria-expanded={advancedOpen}
+            aria-label="بحث متقدم"
+            onClick={() => setAdvancedOpen((v) => !v)}
+          >
+            <SlidersIcon />
+            {advancedCount ? <span className="map-search__badge tabular">{advancedCount}</span> : null}
+          </button>
+        </div>
+
+        {mapCities.length > 1 ? (
+          <div className="map-chips" role="group" aria-label="المدينة">
+            {mapCities.map((c) => (
               <button
                 key={c}
                 type="button"
-                className={active ? 'pill pill--round is-active' : 'pill pill--round'}
-                aria-pressed={active}
+                className={c === city ? 'map-chip map-chip--city is-active' : 'map-chip map-chip--city'}
+                aria-pressed={c === city}
                 onClick={() => pickCity(c)}
               >
                 {c}
               </button>
-            );
-          })}
-        </div>
-      ) : null}
-
-      <div className="map-shell">
-        <div ref={boxRef} className="map-canvas" role="region" aria-label={`خريطة أحياء ${city}`} />
-
-        {mapState === 'loading' ? <div className="map-status">جاري تحميل الخريطة…</div> : null}
-        {mapState === 'error' ? (
-          <div className="map-status">
-            <p>تعذّر تحميل الخريطة، تأكد من الإنترنت.</p>
-            <button type="button" className="btn btn--outline" onClick={() => window.location.reload()}>
-              إعادة المحاولة
-            </button>
+            ))}
           </div>
         ) : null}
 
-        {showHint && mapState === 'ready' ? (
+        <div className="map-chips" role="group" aria-label="نوع العقار">
+          {TYPE_FILTERS.map((t) => (
+            <button
+              key={t.key}
+              type="button"
+              className={type === t.key ? 'map-chip is-active' : 'map-chip'}
+              aria-pressed={type === t.key}
+              onClick={() => setType(t.key)}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {advancedOpen ? (
+          <div className="map-adv">
+            <p className="map-adv__label">موقع الحي</p>
+            <div className="chips chips--grid">
+              {DIRECTIONS.map((d) => {
+                const active = direction === d.key;
+                return (
+                  <button
+                    key={d.key}
+                    type="button"
+                    className={active ? 'pill pill--soft is-active' : 'pill pill--soft'}
+                    aria-pressed={active}
+                    onClick={() => setDirection(active ? null : d.key)}
+                  >
+                    {d.label}
+                  </button>
+                );
+              })}
+            </div>
+            <label className="field map-adv__budget">
+              <span className="sr-only">ميزانيتك القصوى بالريال</span>
+              <input
+                type="text"
+                inputMode="numeric"
+                value={budget ? formatNumber(Number(budget)) : ''}
+                onChange={onBudgetChange}
+                placeholder="ميزانيتك (ريال)"
+                autoComplete="off"
+                className="tabular"
+              />
+            </label>
+            <div className="map-adv__actions">
+              {advancedCount ? (
+                <button
+                  type="button"
+                  className="btn btn--outline"
+                  onClick={() => {
+                    setDirection(null);
+                    setBudget('');
+                  }}
+                >
+                  مسح
+                </button>
+              ) : null}
+              <button type="button" className="btn btn--primary" onClick={() => setAdvancedOpen(false)}>
+                تم
+              </button>
+            </div>
+          </div>
+        ) : null}
+      </div>
+
+      {mapState === 'loading' ? <div className="map-status">جاري تحميل الخريطة…</div> : null}
+      {mapState === 'error' ? (
+        <div className="map-status">
+          <p>تعذّر تحميل الخريطة، تأكد من الإنترنت.</p>
+          <button type="button" className="btn btn--outline" onClick={() => window.location.reload()}>
+            إعادة المحاولة
+          </button>
+        </div>
+      ) : null}
+
+      {mapState === 'ready' && !selected ? (
+        showHint ? (
           <div className="map-hint" role="status">
             <span>اضغط على أي حي عشان تشوف عروضه</span>
             <button type="button" className="map-hint__ok" onClick={closeHint}>
               تمام
             </button>
           </div>
-        ) : null}
-
-        {mapState === 'ready' && !selected ? (
+        ) : (
           <p className="map-summary tabular" aria-live="polite">
             {districtsWithOffers ? `${districtsWithOffers} ${districtsWithOffers <= 10 ? 'أحياء' : 'حي'} فيها عروض` : 'ما فيه عروض تطابق بحثك هنا'}
           </p>
-        ) : null}
+        )
+      ) : null}
 
-        {selected ? (
-          <section className="map-sheet" aria-labelledby="map-sheet-title">
-            <div className="map-sheet__head">
-              <h2 id="map-sheet-title">
-                حي {selectedShape?.name ?? selected} <span className="map-sheet__count tabular">· {countLabel(selectedOffers.length)}</span>
-              </h2>
-              <button type="button" className="icon-btn icon-btn--plain" aria-label="إغلاق" onClick={() => setSelected(null)}>
-                <CloseIcon />
-              </button>
+      {selected ? (
+        <section className="map-sheet" aria-labelledby="map-sheet-title">
+          <div className="map-sheet__head">
+            <h2 id="map-sheet-title">
+              حي {selectedShape?.name ?? selected} <span className="map-sheet__count tabular">· {countLabel(selectedOffers.length)}</span>
+            </h2>
+            <button type="button" className="icon-btn icon-btn--plain" aria-label="إغلاق" onClick={() => setSelected(null)}>
+              <CloseIcon />
+            </button>
+          </div>
+          {selectedOffers.length ? (
+            <div className="map-sheet__list">
+              {selectedOffers.map((o) => (
+                <MiniOfferCard key={o.id} offer={o} />
+              ))}
             </div>
-            {selectedOffers.length ? (
-              <div className="map-sheet__list">
-                {selectedOffers.map((o) => (
-                  <MiniOfferCard key={o.id} offer={o} />
-                ))}
-              </div>
-            ) : (
-              <div className="map-sheet__empty">
-                <p>ما فيه عروض في هذا الحي حالياً.</p>
-                {whatsappNumber ? (
-                  <a
-                    className="btn btn--wa"
-                    href={whatsappLink(whatsappNumber, requestMessage({ query: selectedShape?.name ?? '', direction, type, city, budget }))}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <ChatIcon />
-                    <span>اطلب عرض في هذا الحي</span>
-                  </a>
-                ) : null}
-              </div>
-            )}
-          </section>
-        ) : null}
-      </div>
-    </>
+          ) : (
+            <div className="map-sheet__empty">
+              <p>ما فيه عروض في هذا الحي حالياً.</p>
+              {whatsappNumber ? (
+                <a
+                  className="btn btn--wa"
+                  href={whatsappLink(whatsappNumber, requestMessage({ query: selectedShape?.name ?? '', direction, type, city, budget }))}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <ChatIcon />
+                  <span>اطلب عرض في هذا الحي</span>
+                </a>
+              ) : null}
+            </div>
+          )}
+        </section>
+      ) : null}
+    </div>
   );
 }
