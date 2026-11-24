@@ -138,7 +138,22 @@ export default function MapBrowser({ offers, cities, whatsappNumber }) {
         });
         map.touchZoomRotate.disableRotation();
         map.on('load', () => {
+          map.addSource('all', { type: 'geojson', data: EMPTY });
+          map.addSource('all-names', { type: 'geojson', data: EMPTY });
           map.addSource('districts', { type: 'geojson', data: EMPTY });
+          // كل الأحياء: حدود رمادية خفيفة وتنضغط
+          map.addLayer({
+            id: 'a-fill',
+            type: 'fill',
+            source: 'all',
+            paint: { 'fill-color': '#8a8676', 'fill-opacity': 0.06 },
+          });
+          map.addLayer({
+            id: 'a-line',
+            type: 'line',
+            source: 'all',
+            paint: { 'line-color': '#8a8676', 'line-width': 0.8, 'line-opacity': 0.55 },
+          });
           map.addSource('selected', { type: 'geojson', data: EMPTY });
           map.addLayer({
             id: 'd-fill',
@@ -164,14 +179,27 @@ export default function MapBrowser({ offers, cities, whatsappNumber }) {
             source: 'selected',
             paint: { 'line-color': PRIMARY, 'line-width': 3 },
           });
-          map.on('click', 'd-fill', (e) => {
+          map.addLayer({
+            id: 'a-names',
+            type: 'symbol',
+            source: 'all-names',
+            minzoom: 11.5,
+            layout: {
+              'text-field': ['get', 'name'],
+              'text-font': ['Noto Sans Regular'],
+              'text-size': 12,
+              'text-max-width': 8,
+            },
+            paint: { 'text-color': '#4a4a44', 'text-halo-color': '#ffffff', 'text-halo-width': 1.5 },
+          });
+          map.on('click', 'a-fill', (e) => {
             const key = e.features?.[0]?.properties?.key;
             if (key) setSelected(key);
           });
-          map.on('mouseenter', 'd-fill', () => {
+          map.on('mouseenter', 'a-fill', () => {
             map.getCanvas().style.cursor = 'pointer';
           });
-          map.on('mouseleave', 'd-fill', () => {
+          map.on('mouseleave', 'a-fill', () => {
             map.getCanvas().style.cursor = '';
           });
           mapRef.current = map;
@@ -192,6 +220,27 @@ export default function MapBrowser({ offers, cities, whatsappNumber }) {
       mapRef.current = null;
     };
   }, []);
+
+  // كل أحياء المدينة (تنضغط حتى لو ما فيها عروض)
+  useEffect(() => {
+    const map = mapRef.current;
+    if (mapState !== 'ready' || !map) return;
+    if (!shapes) {
+      map.getSource('all')?.setData(EMPTY);
+      map.getSource('all-names')?.setData(EMPTY);
+      return;
+    }
+    const polys = [];
+    const names = [];
+    let i = 0;
+    for (const [key, shape] of shapes) {
+      polys.push(districtFeature(i, shape, { key }));
+      names.push({ type: 'Feature', id: i, properties: { name: shape.name }, geometry: { type: 'Point', coordinates: shape.center } });
+      i += 1;
+    }
+    map.getSource('all')?.setData({ type: 'FeatureCollection', features: polys });
+    map.getSource('all-names')?.setData({ type: 'FeatureCollection', features: names });
+  }, [mapState, shapes]);
 
   // رسم الأحياء اللي فيها عروض + أرقامها
   useEffect(() => {
