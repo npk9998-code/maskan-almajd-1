@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CloseIcon, ExpandIcon } from '@/components/Icons';
-import { CITY_GEO, MAP_STYLE, districtFeature, districtKey, loadCityShapes, loadMapLibre, ringsBounds } from '@/lib/geo';
+import { CITY_GEO, MAP_STYLE, districtFeature, districtKey, loadCityShapes, loadMapLibre, ringsBounds, arabicLabels, supportsWebGL } from '@/lib/geo';
 
 const PRIMARY = '#0f5c4d';
 
@@ -43,6 +43,10 @@ export default function ApproxMap({ city, district, similar }) {
     if (!visible) return undefined;
     let alive = true;
     let failTimer = null;
+    if (!supportsWebGL()) {
+      setStatus('none');
+      return undefined;
+    }
     Promise.all([loadMapLibre(), loadCityShapes(city)])
       .then(([lib, shapes]) => {
         if (!alive || !boxRef.current) return;
@@ -65,6 +69,7 @@ export default function ApproxMap({ city, district, similar }) {
         map.touchZoomRotate.disableRotation();
         setInteractive(map, false);
         map.on('load', () => {
+          arabicLabels(map);
           map.addSource('district', {
             type: 'geojson',
             data: { type: 'FeatureCollection', features: [districtFeature(0, shape, {})] },

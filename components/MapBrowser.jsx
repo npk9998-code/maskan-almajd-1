@@ -5,7 +5,7 @@ import MiniOfferCard from '@/components/MiniOfferCard';
 import { ChatIcon, CloseIcon, SearchIcon, SlidersIcon } from '@/components/Icons';
 import { filterOffers } from '@/lib/filter';
 import { DIRECTIONS, TYPE_FILTERS, formatNumber, normalizeArabic, requestMessage, whatsappLink } from '@/lib/format';
-import { CITY_GEO, MAP_STYLE, districtFeature, districtKey, loadCityShapes, loadMapLibre, ringsBounds } from '@/lib/geo';
+import { CITY_GEO, MAP_STYLE, districtFeature, districtKey, loadCityShapes, loadMapLibre, ringsBounds, arabicLabels, supportsWebGL } from '@/lib/geo';
 
 const PRIMARY = '#0f5c4d';
 const HINT_KEY = 'mz_map_hint';
@@ -125,6 +125,10 @@ export default function MapBrowser({ offers, cities, whatsappNumber }) {
   useEffect(() => {
     let alive = true;
     let failTimer = null;
+    if (!supportsWebGL()) {
+      setMapState('nogl');
+      return undefined;
+    }
     loadMapLibre()
       .then((lib) => {
         if (!alive || !boxRef.current) return;
@@ -139,6 +143,7 @@ export default function MapBrowser({ offers, cities, whatsappNumber }) {
         });
         map.touchZoomRotate.disableRotation();
         map.on('load', () => {
+          arabicLabels(map);
           map.addSource('all', { type: 'geojson', data: EMPTY });
           map.addSource('all-names', { type: 'geojson', data: EMPTY });
           map.addSource('offer-names', { type: 'geojson', data: EMPTY });
@@ -446,6 +451,11 @@ export default function MapBrowser({ offers, cities, whatsappNumber }) {
       </div>
 
       {mapState === 'loading' ? <div className="map-status">جاري تحميل الخريطة…</div> : null}
+      {mapState === 'nogl' ? (
+        <div className="map-status">
+          <p>جهازك أو متصفحك ما يدعم عرض الخريطة.</p>
+        </div>
+      ) : null}
       {mapState === 'error' ? (
         <div className="map-status">
           <p>تعذّر تحميل الخريطة، تأكد من الإنترنت.</p>
