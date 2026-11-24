@@ -33,7 +33,9 @@ export default function MapBrowser({ offers, cities, whatsappNumber }) {
   const [budget, setBudget] = useState('');
   const [city, setCity] = useState(firstCity);
   const [selected, setSelected] = useState(null);
-  const [shapes, setShapes] = useState(null);
+  const [geo, setGeo] = useState(null); // { city, shapes }
+  // ما نستخدم حدود مدينة ثانية لو المدينة تغيّرت وللحين ما تحمّلت
+  const shapes = geo && geo.city === city ? geo.shapes : null;
   const [mapState, setMapState] = useState('loading'); // loading | ready | error
   const [showHint, setShowHint] = useState(false);
   const [advancedOpen, setAdvancedOpen] = useState(false);
@@ -84,9 +86,8 @@ export default function MapBrowser({ offers, cities, whatsappNumber }) {
   // حدود أحياء المدينة
   useEffect(() => {
     let alive = true;
-    setShapes(null);
     if (!city) return undefined;
-    loadCityShapes(city).then((m) => alive && setShapes(m));
+    loadCityShapes(city).then((m) => alive && setGeo({ city, shapes: m }));
     return () => {
       alive = false;
     };
