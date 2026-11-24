@@ -8,7 +8,8 @@ import ShareButton from '@/components/ShareButton';
 import { ChatIcon, ChevronIcon, LockIcon, PinIcon } from '@/components/Icons';
 import { NumberBadge, OfferCover, StatusBadge, Watermark } from '@/components/OfferMedia';
 import SimilarOffers from '@/components/SimilarOffers';
-import { isNew, offerHeading, offerSpecs, offerSubtitle, offerTitle, offerWhatsappText, priceInfo, pricePerMeter, whatsappLink } from '@/lib/format';
+import ApproxMap from '@/components/ApproxMap';
+import { shortPrice, isNew, offerHeading, offerSpecs, offerSubtitle, offerTitle, offerWhatsappText, priceInfo, pricePerMeter, whatsappLink } from '@/lib/format';
 import { getPublicOffer, getPublicOffers } from '@/lib/offers';
 import { pickSimilar } from '@/lib/similar';
 import { getFalLicense, getSiteUrl, getWhatsAppNumber } from '@/lib/site';
@@ -124,6 +125,13 @@ export default async function OfferPage({ params }) {
               <p className="panel__text">{offer.description}</p>
             </section>
           ) : null}
+
+          <ApproxMap
+            key={offer.id}
+            city={offer.city}
+            district={offer.district}
+            similar={similar.map((o) => ({ id: o.id, district: o.district, label: shortPrice(o) }))}
+          />
 
           <div className="notice">
             <LockIcon className="notice__icon" />

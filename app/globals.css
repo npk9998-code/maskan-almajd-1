@@ -1254,3 +1254,534 @@ a {
 .chips--types .pill--round {
   padding: 0 4px;
 }
+
+/* ===== الشريط السفلي (العروض / الخريطة) ===== */
+.has-tabs {
+  padding-bottom: calc(96px + env(safe-area-inset-bottom));
+}
+
+.bottom-tabs {
+  position: fixed;
+  inset: auto 0 0;
+  z-index: 20;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  background: rgb(255 255 255 / 0.96);
+  border-top: 1px solid var(--border);
+  padding: 6px 12px calc(6px + env(safe-area-inset-bottom));
+}
+
+@supports (backdrop-filter: blur(8px)) {
+  .bottom-tabs {
+    background: rgb(255 255 255 / 0.86);
+    backdrop-filter: blur(8px);
+  }
+}
+
+.bottom-tabs__item {
+  flex: 1;
+  max-width: 200px;
+  min-height: 52px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border-radius: 14px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.bottom-tabs__item svg {
+  width: 24px;
+  height: 24px;
+}
+
+.bottom-tabs__item.is-active {
+  color: var(--primary);
+  background: var(--primary-soft);
+}
+
+.bottom-tabs__item:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.site-footer {
+  margin-top: 32px;
+  text-align: center;
+}
+
+/* ===== صفحة الخريطة ===== */
+.map-page {
+  padding-top: 16px;
+}
+
+.map-cities {
+  margin-top: 12px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+
+.map-cities::-webkit-scrollbar {
+  display: none;
+}
+
+.map-cities .pill {
+  flex: none;
+}
+
+.map-shell {
+  position: relative;
+  margin-top: 12px;
+  height: max(420px, calc(100dvh - 330px));
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--placeholder);
+}
+
+.map-canvas,
+.approx__canvas {
+  position: absolute;
+  inset: 0;
+}
+
+.map-status {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  gap: 12px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 15px;
+  padding: 16px;
+  background: var(--placeholder);
+}
+
+.map-count {
+  min-width: 34px;
+  height: 34px;
+  padding: 0 8px;
+  border-radius: 999px;
+  border: 2px solid #fff;
+  background: var(--primary);
+  color: #fff;
+  font: 700 15px/1 var(--font);
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.25);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.map-count.is-active {
+  background: #fff;
+  color: var(--primary);
+  border-color: var(--primary);
+  transform: scale(1.15);
+}
+
+.map-hint {
+  position: absolute;
+  top: 12px;
+  inset-inline: 12px 56px;
+  margin-inline: auto;
+  max-width: 340px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 10px 10px 14px;
+  padding-inline-start: 14px;
+  background: var(--sold);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 14px;
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.25);
+  z-index: 3;
+}
+
+.map-hint span {
+  flex: 1;
+}
+
+.map-hint__ok {
+  flex: none;
+  border: 0;
+  border-radius: 10px;
+  padding: 8px 14px;
+  background: #fff;
+  color: var(--sold);
+  font: 700 14px var(--font);
+  cursor: pointer;
+}
+
+.map-summary {
+  position: absolute;
+  bottom: 12px;
+  inset-inline: 12px;
+  margin: 0 auto;
+  width: fit-content;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.95);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.15);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  z-index: 2;
+}
+
+.map-sheet {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 3;
+  background: var(--surface);
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -4px 20px rgb(0 0 0 / 0.15);
+  padding: 12px 0 14px;
+}
+
+.map-sheet__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-inline: 16px 8px;
+}
+
+.map-sheet__head h2 {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.map-sheet__count {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.icon-btn--plain {
+  box-shadow: none;
+  width: 40px;
+  height: 40px;
+}
+
+.map-sheet__list {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 10px 16px 2px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+}
+
+.map-sheet__list::-webkit-scrollbar {
+  display: none;
+}
+
+.map-sheet__empty {
+  padding: 8px 16px 0;
+  display: grid;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+.mini-card {
+  flex: none;
+  width: 168px;
+  scroll-snap-align: start;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--surface);
+  color: var(--text);
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.mini-card__media {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 14 / 9;
+  background: var(--placeholder);
+  color: var(--placeholder-ink);
+}
+
+.mini-card__media--cover {
+  background: var(--primary);
+  color: rgb(255 255 255 / 0.85);
+}
+
+.mini-card__media svg {
+  width: 34px;
+  height: 34px;
+}
+
+.mini-card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mini-card__chip {
+  position: absolute;
+  top: 6px;
+  inset-inline-start: 6px;
+}
+
+.mini-card__body {
+  display: grid;
+  gap: 2px;
+  padding: 8px 10px 10px;
+}
+
+.mini-card__title {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.mini-card__meta {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.mini-card__price {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.mini-card:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ===== الموقع التقريبي في صفحة العرض ===== */
+.approx__map {
+  position: relative;
+  height: 190px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--placeholder);
+  margin-top: 10px;
+}
+
+.approx__map:not(.is-expanded) .maplibregl-marker {
+  pointer-events: none;
+}
+
+.approx__map.is-expanded {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  height: auto;
+  border-radius: 0;
+  margin: 0;
+}
+
+.approx__open {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border: 0;
+  background: transparent;
+  cursor: zoom-in;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: 10px;
+}
+
+.approx__open-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.95);
+  color: var(--primary);
+  font: 700 13px var(--font);
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.15);
+}
+
+.approx__bar {
+  position: absolute;
+  top: calc(12px + env(safe-area-inset-top));
+  inset-inline: 12px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 6px 6px 6px;
+  padding-inline-start: 16px;
+  background: rgb(255 255 255 / 0.96);
+  border-radius: 16px;
+  box-shadow: 0 2px 10px rgb(0 0 0 / 0.15);
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.approx__bar-sub {
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.approx__bar .icon-btn {
+  box-shadow: none;
+  width: 40px;
+  height: 40px;
+}
+
+.approx__note {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.map-price {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--primary);
+  border: 1.5px solid var(--primary);
+  font: 700 13px/1.2 var(--font);
+  font-variant-numeric: tabular-nums;
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.2);
+}
+
+.maplibregl-ctrl-attrib {
+  font-size: 10px;
+}
+
+/* ===== الجولة التعريفية ===== */
+.tour {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+}
+
+.tour__backdrop {
+  position: absolute;
+  inset: 0;
+}
+
+.tour__spot {
+  position: fixed;
+  border-radius: 16px;
+  box-shadow: 0 0 0 9999px rgb(15 25 22 / 0.62);
+  outline: 2px solid #fff;
+  pointer-events: none;
+  transition: top 0.25s ease, left 0.25s ease, width 0.25s ease, height 0.25s ease;
+}
+
+.tour__card {
+  position: fixed;
+  background: var(--surface);
+  border-radius: 18px;
+  padding: 16px 16px 14px;
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.25);
+}
+
+.tour__arrow {
+  position: absolute;
+  top: -7px;
+  width: 14px;
+  height: 14px;
+  margin-left: -7px;
+  background: var(--surface);
+  transform: rotate(45deg);
+  border-radius: 3px;
+}
+
+.tour__card.is-above .tour__arrow {
+  top: auto;
+  bottom: -7px;
+}
+
+.tour__step {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.tour__title {
+  margin-top: 2px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.tour__text {
+  margin-top: 4px;
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--text);
+}
+
+.tour__foot {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.tour__dots {
+  display: flex;
+  gap: 5px;
+}
+
+.tour__dots span {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--border-strong);
+  transition: width 0.2s ease;
+}
+
+.tour__dots span.is-active {
+  width: 18px;
+  background: var(--primary);
+}
+
+.tour__actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tour__skip {
+  border: 0;
+  background: none;
+  padding: 10px 12px;
+  color: var(--muted);
+  font: 600 15px var(--font);
+  cursor: pointer;
+}
+
+.tour__next {
+  min-height: 44px;
+  padding-inline: 20px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tour__spot,
+  .tour__dots span {
+    transition: none;
+  }
+}

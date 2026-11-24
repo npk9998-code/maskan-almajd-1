@@ -1,35 +1,13 @@
 import OffersBrowser from '@/components/OffersBrowser';
 import SiteHeader from '@/components/SiteHeader';
-import { isNew } from '@/lib/format';
+import BottomTabs from '@/components/BottomTabs';
+import Tour, { TourReplayButton } from '@/components/Tour';
+import { toCardData } from '@/lib/card-data';
 import { getPublicOffers, getVisibleCities } from '@/lib/offers';
 import { getSiteUrl, getWhatsAppNumber } from '@/lib/site';
 
 // الصفحة تتحدث من قاعدة البيانات كل دقيقة
 export const revalidate = 60;
-
-// نرسل للمتصفح بس اللي يحتاجه الكرت
-function toCardData(offer) {
-  return {
-    id: offer.id,
-    type: offer.type,
-    customType: offer.customType,
-    city: offer.city,
-    district: offer.district,
-    direction: offer.direction,
-    price: offer.price,
-    priceDisplay: offer.priceDisplay,
-    showPricePerMeter: offer.showPricePerMeter,
-    area: offer.area,
-    rooms: offer.rooms,
-    bathrooms: offer.bathrooms,
-    facade: offer.facade,
-    streetWidth: offer.streetWidth,
-    ageYears: offer.ageYears,
-    status: offer.status,
-    isNew: isNew(offer),
-    image: offer.images[0]?.thumb ?? null,
-  };
-}
 
 export default async function HomePage() {
   const [offers, cities] = await Promise.all([getPublicOffers(), getVisibleCities()]);
@@ -37,7 +15,7 @@ export default async function HomePage() {
   return (
     <>
       <SiteHeader />
-      <main className="container page">
+      <main className="container page has-tabs">
         <div className="hero">
           <h1>عروض عقارية مختارة</h1>
           <p>تصفّح العروض وتواصل معي مباشرة لأي استفسار</p>
@@ -48,7 +26,12 @@ export default async function HomePage() {
           whatsappNumber={getWhatsAppNumber()}
           siteUrl={getSiteUrl()}
         />
+        <footer className="site-footer">
+          <TourReplayButton />
+        </footer>
       </main>
+      <Tour />
+      <BottomTabs />
     </>
   );
 }

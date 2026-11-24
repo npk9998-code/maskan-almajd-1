@@ -30,6 +30,7 @@ export default function FavoritesHeaderButton() {
       aria-pressed={active}
       aria-label={`المفضلة (${count})`}
       onClick={onClick}
+      data-tour="favorites"
     >
       <HeartIcon filled={active || count > 0} />
       {count > 0 ? <span className="fav-header__count tabular">{count}</span> : null}

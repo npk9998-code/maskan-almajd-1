@@ -2,12 +2,10 @@
 
 import { useDeferredValue, useEffect, useMemo, useState } from 'react';
 import OfferCard from '@/components/OfferCard';
-import { ChatIcon, ChevronDownIcon, HeartIcon, SearchIcon, SlidersIcon } from '@/components/Icons';
+import SearchFilters from '@/components/SearchFilters';
+import { ChatIcon, HeartIcon } from '@/components/Icons';
 import { consumeFavoritesRequest, setShowFavorites, useFavorites, useShowFavorites } from '@/lib/favorites';
 import {
-  DIRECTIONS,
-  TYPE_FILTERS,
-  formatNumber,
   normalizeArabic,
   offerWhatsappText,
   requestMessage,
@@ -66,7 +64,6 @@ export default function OffersBrowser({ offers, cities, whatsappNumber, siteUrl 
   const [type, setType] = useState('all');
   const [city, setCity] = useState('');
   const [budget, setBudget] = useState('');
-  const [advancedOpen, setAdvancedOpen] = useState(false);
   const favorites = useFavorites();
   const showFavs = useShowFavorites();
 
@@ -106,12 +103,6 @@ export default function OffersBrowser({ offers, cities, whatsappNumber, siteUrl 
   }, [offers, deferredQuery, direction, type, city, maxPrice]);
 
   const hasFilters = query || direction || type !== 'all' || city || budget;
-  const advancedCount = [direction, city, budget].filter(Boolean).length;
-  const resetAdvanced = () => {
-    setDirection(null);
-    setCity('');
-    setBudget('');
-  };
   const resetFilters = () => {
     setQuery('');
     setDirection(null);
@@ -120,118 +111,21 @@ export default function OffersBrowser({ offers, cities, whatsappNumber, siteUrl 
     setBudget('');
   };
 
-  const onBudgetChange = (e) => {
-    const digits = e.target.value.replace(/[^\d٠-٩]/g, '').replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
-    setBudget(digits.slice(0, 10));
-  };
-
   return (
     <>
-      <section className="filters" aria-label="أدوات البحث">
-        <label className="search">
-          <SearchIcon className="search__icon" />
-          <span className="sr-only">ابحث بالحي أو المدينة</span>
-          <input
-            type="search"
-            name="q"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="ابحث بالحي أو المدينة أو النوع…"
-            autoComplete="off"
-            enterKeyHint="search"
-            spellCheck={false}
-          />
-        </label>
-
-        <fieldset className="filter-group">
-          <legend>نوع العقار</legend>
-          <div className="chips chips--types">
-            {TYPE_FILTERS.map((t) => {
-              const active = type === t.key;
-              return (
-                <button
-                  key={t.key}
-                  type="button"
-                  className={active ? 'pill pill--round is-active' : 'pill pill--round'}
-                  aria-pressed={active}
-                  onClick={() => setType(t.key)}
-                >
-                  {t.label}
-                </button>
-              );
-            })}
-          </div>
-        </fieldset>
-
-        <button
-          type="button"
-          className={advancedOpen ? 'advanced-toggle is-open' : 'advanced-toggle'}
-          aria-expanded={advancedOpen}
-          aria-controls="advanced-filters"
-          onClick={() => setAdvancedOpen((v) => !v)}
-        >
-          <SlidersIcon className="icon-sm" />
-          <span>بحث متقدم</span>
-          {advancedCount > 0 ? <span className="advanced-toggle__count tabular">{advancedCount}</span> : null}
-          <ChevronDownIcon className="advanced-toggle__chevron" />
-        </button>
-
-        {advancedOpen ? (
-          <div className="advanced" id="advanced-filters">
-            <fieldset className="filter-group">
-              <legend>موقع الحي</legend>
-              <div className="chips chips--grid">
-                {DIRECTIONS.map((d) => {
-                  const active = direction === d.key;
-                  return (
-                    <button
-                      key={d.key}
-                      type="button"
-                      className={active ? 'pill pill--soft is-active' : 'pill pill--soft'}
-                      aria-pressed={active}
-                      onClick={() => setDirection(active ? null : d.key)}
-                    >
-                      {d.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </fieldset>
-            <div className="filter-row">
-              <label className="field field--select">
-                <span className="sr-only">المدينة</span>
-                <select name="city" value={city} onChange={(e) => setCity(e.target.value)}>
-                  <option value="">المدينة</option>
-                  {cities.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDownIcon className="field__chevron" />
-              </label>
-              <label className="field">
-                <span className="sr-only">ميزانيتك القصوى بالريال</span>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  name="budget"
-                  value={budget ? formatNumber(Number(budget)) : ''}
-                  onChange={onBudgetChange}
-                  placeholder="ميزانيتك (ريال)"
-                  autoComplete="off"
-                  className="tabular"
-                />
-              </label>
-            </div>
-            {advancedCount > 0 ? (
-              <button type="button" className="btn btn--outline advanced__reset" onClick={resetAdvanced}>
-                مسح الفلاتر
-              </button>
-            ) : null}
-          </div>
-        ) : null}
-      </section>
+      <SearchFilters
+        query={query}
+        onQuery={setQuery}
+        type={type}
+        onType={setType}
+        direction={direction}
+        onDirection={setDirection}
+        budget={budget}
+        onBudget={setBudget}
+        city={city}
+        onCity={setCity}
+        cities={cities}
+      />
 
       {showFavs ? (
         <section aria-labelledby="favs-heading" className="results">

@@ -199,4 +199,29 @@ export function SlidersIcon(props) {
   );
 }
 
+export function MapIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M3.5 6.5l5.5-2.5 6 2.5 5.5-2.5v13.5l-5.5 2.5-6-2.5-5.5 2.5z" />
+      <path d="M9 4v13.5M15 6.5V20" />
+    </svg>
+  );
+}
+
+export function ExpandIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7" />
+    </svg>
+  );
+}
+
+export function CloseIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M6 6l12 12M18 6L6 18" />
+    </svg>
+  );
+}
+
 export const TYPE_ICON = { villa: HouseIcon, apartment: BuildingIcon, land: LandIcon, other: StoreIcon };

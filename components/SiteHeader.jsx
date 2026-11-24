@@ -22,7 +22,7 @@ export default function SiteHeader() {
         <div className="site-header__actions">
         <FavoritesHeaderButton />
         {href ? (
-          <a href={href} className="btn btn--wa btn--icon" aria-label="تواصل معي عبر واتساب" target="_blank" rel="noopener noreferrer">
+          <a href={href} className="btn btn--wa btn--icon" aria-label="تواصل معي عبر واتساب" target="_blank" rel="noopener noreferrer" data-tour="whatsapp">
             <ChatIcon />
           </a>
         ) : null}
