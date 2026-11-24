@@ -140,6 +140,9 @@ export default function MapBrowser({ offers, cities, whatsappNumber }) {
         map.on('load', () => {
           map.addSource('all', { type: 'geojson', data: EMPTY });
           map.addSource('all-names', { type: 'geojson', data: EMPTY });
+          map.addSource('offer-names', { type: 'geojson', data: EMPTY });
+          // أسماء الأحياء من الخريطة الأساسية تتكرر مع أسمائنا، فنخفيها
+          if (map.getLayer('label_other')) map.setLayoutProperty('label_other', 'visibility', 'none');
           map.addSource('districts', { type: 'geojson', data: EMPTY });
           // كل الأحياء: حدود رمادية خفيفة وتنضغط
           map.addLayer({
@@ -191,6 +194,21 @@ export default function MapBrowser({ offers, cities, whatsappNumber }) {
               'text-max-width': 8,
             },
             paint: { 'text-color': '#4a4a44', 'text-halo-color': '#ffffff', 'text-halo-width': 1.5 },
+          });
+          // أسماء الأحياء اللي فيها عروض: تطلع دايم تحت الرقم
+          map.addLayer({
+            id: 'o-names',
+            type: 'symbol',
+            source: 'offer-names',
+            layout: {
+              'text-field': ['get', 'name'],
+              'text-font': ['Noto Sans Bold'],
+              'text-size': 13,
+              'text-max-width': 8,
+              'text-anchor': 'top',
+              'text-offset': [0, 1.5],
+            },
+            paint: { 'text-color': PRIMARY, 'text-halo-color': '#ffffff', 'text-halo-width': 2 },
           });
           map.on('click', 'a-fill', (e) => {
             const key = e.features?.[0]?.properties?.key;
@@ -267,6 +285,15 @@ export default function MapBrowser({ offers, cities, whatsappNumber }) {
       markersRef.current.push(new lib.Marker({ element: el }).setLngLat(shape.center).addTo(map));
     }
     map.getSource('districts')?.setData({ type: 'FeatureCollection', features });
+    map.getSource('offer-names')?.setData({
+      type: 'FeatureCollection',
+      features: features.map((f) => ({
+        type: 'Feature',
+        id: f.id,
+        properties: { name: f.properties.name },
+        geometry: { type: 'Point', coordinates: shapes.get(f.properties.key).center },
+      })),
+    });
 
     // أول ما تتغير المدينة: نوسّط الخريطة عليها
     if (fittedCityRef.current !== city) {
@@ -426,7 +453,7 @@ export default function MapBrowser({ offers, cities, whatsappNumber }) {
       {mapState === 'ready' && !selected ? (
         showHint ? (
           <div className="map-hint" role="status">
-            <span>اضغط على أي حي عشان تشوف عروضه</span>
+            <span>الأحياء الخضراء فيها عروض، واضغط على أي حي عشان تشوف عروضه</span>
             <button type="button" className="map-hint__ok" onClick={closeHint}>
               تمام
             </button>
