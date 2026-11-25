@@ -362,7 +362,7 @@ export default function SubmitForm({ cities, districtsByCity, whatsappNumber }) 
                 <ChevronDownIcon className="field__chevron" />
               </div>
             </Field>
-            <Field label="الحي" error={errors.district}>
+            <Field label="الحي" error={errors.district} hint="اختر من الاقتراحات، أو اكتب حيك لو ما لقيته">
               <SuggestInput
                 value={form.district}
                 onChange={set('district')}
