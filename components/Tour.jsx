@@ -12,6 +12,7 @@ const STEPS = [
   { target: 'favorites', title: 'المفضلة', text: 'اضغط القلب على أي عرض يعجبك، وتلقاه محفوظ هنا.' },
   { target: 'map-tab', title: 'الخريطة', text: 'شوف العروض على الخريطة حسب الأحياء.' },
   { target: 'whatsapp', title: 'تواصل معي', text: 'أي استفسار؟ كلمني مباشرة على واتساب.' },
+  { target: 'submit', title: 'اعرض عقارك', text: 'عندك عقار تبي تبيعه؟ اضغط هنا وعبّ بياناته، ونتواصل معك.' },
 ];
 
 const PAD = 6;
@@ -25,7 +26,7 @@ function findTarget(name) {
   return null;
 }
 
-export default function Tour() {
+export default function Tour({ steps: allSteps = STEPS, storageKey = DONE_KEY, eventName = TOUR_EVENT }) {
   const [steps, setSteps] = useState(null); // الخطوات الموجودة فعلاً في الصفحة
   const [index, setIndex] = useState(0);
   const [rect, setRect] = useState(null);
@@ -34,37 +35,37 @@ export default function Tour() {
   const [cardH, setCardH] = useState(160);
 
   const start = useCallback(() => {
-    const available = STEPS.filter((s) => findTarget(s.target));
+    const available = allSteps.filter((s) => findTarget(s.target));
     if (!available.length) return;
     setSteps(available);
     setIndex(0);
-  }, []);
+  }, [allSteps]);
 
   const finish = useCallback(() => {
     setSteps(null);
     setRect(null);
     try {
-      localStorage.setItem(DONE_KEY, '1');
+      localStorage.setItem(storageKey, '1');
     } catch {
       // ما يهم
     }
-  }, []);
+  }, [storageKey]);
 
   // أول زيارة بس
   useEffect(() => {
     let seen = true;
     try {
-      seen = Boolean(localStorage.getItem(DONE_KEY));
+      seen = Boolean(localStorage.getItem(storageKey));
     } catch {
       // التخزين مقفل: ما نعرضها
     }
     const t = seen ? null : setTimeout(start, 900);
-    window.addEventListener(TOUR_EVENT, start);
+    window.addEventListener(eventName, start);
     return () => {
       if (t) clearTimeout(t);
-      window.removeEventListener(TOUR_EVENT, start);
+      window.removeEventListener(eventName, start);
     };
-  }, [start]);
+  }, [start, storageKey, eventName]);
 
   const step = steps?.[index];
 
@@ -74,7 +75,7 @@ export default function Tour() {
     const el = findTarget(step.target);
     if (!el) return undefined;
     if (el.closest('.site-header')) window.scrollTo({ top: 0, behavior: 'instant' });
-    else if (!el.closest('.bottom-tabs')) el.scrollIntoView({ block: 'center', behavior: 'instant' });
+    else if (!el.closest('.bottom-tabs, .admin-nav')) el.scrollIntoView({ block: 'center', behavior: 'instant' });
     const measure = () => setRect(el.getBoundingClientRect());
     measure();
     window.addEventListener('resize', measure);
@@ -162,17 +163,17 @@ export default function Tour() {
   );
 }
 
-export function TourReplayButton() {
+export function TourReplayButton({ eventName = TOUR_EVENT, label = 'كيف أستخدم الموقع؟' }) {
   return (
     <button
       type="button"
       className="link-btn"
       onClick={() => {
         window.scrollTo({ top: 0, behavior: 'instant' });
-        window.dispatchEvent(new Event(TOUR_EVENT));
+        window.dispatchEvent(new Event(eventName));
       }}
     >
-      كيف أستخدم الموقع؟
+      {label}
     </button>
   );
 }

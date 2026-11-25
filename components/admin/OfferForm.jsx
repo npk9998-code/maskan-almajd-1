@@ -536,6 +536,7 @@ export default function OfferForm({ cities, districts, usedTypes = [], initial }
               { key: 'available', label: 'معروض للعملاء' },
               { key: 'hidden', label: 'مخفي' },
               ...(isEdit && initial?.status === 'sold' ? [{ key: 'sold', label: 'تم البيع' }] : []),
+              ...(isEdit && initial?.status === 'pending' ? [{ key: 'pending', label: 'بانتظار النشر' }] : []),
             ].map((s) => (
               <button
                 key={s.key}
@@ -556,11 +557,11 @@ export default function OfferForm({ cities, districts, usedTypes = [], initial }
             {confirmDelete ? (
               <>
                 <p>
-                  متأكد تبي تحذف العرض رقم {form.id} نهائياً؟ الصور والملاحظات تنحذف معه، وما يرجع.
+                  متأكد تبي تحذف العرض رقم {form.id}؟ ينتقل لسلة المحذوفات ٣٠ يوم، وتقدر ترجعه منها.
                 </p>
                 <div className="danger-zone__actions">
                   <button type="button" className="btn btn--danger" onClick={onDelete} disabled={busy}>
-                    {isDeleting ? 'جاري الحذف…' : 'ايه، احذفه نهائياً'}
+                    {isDeleting ? 'جاري الحذف…' : 'ايه، احذفه'}
                   </button>
                   <button type="button" className="btn btn--outline" onClick={() => setConfirmDelete(false)} disabled={busy}>
                     تراجع

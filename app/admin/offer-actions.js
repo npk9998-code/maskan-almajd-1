@@ -9,7 +9,7 @@ const MAX_UPLOAD_BYTES = 950 * 1024;
 const IMAGE_TYPES = { 'image/webp': 'webp', 'image/jpeg': 'jpg', 'image/png': 'png' };
 const TYPES = new Set(['villa', 'apartment', 'land', 'other']);
 const PRICE_DISPLAYS = new Set(['show', 'negotiable', 'hidden']);
-const STATUSES = new Set(['available', 'hidden', 'sold']);
+const STATUSES = new Set(['available', 'hidden', 'sold', 'pending']);
 
 async function requireToken() {
   const token = await getActionToken();
@@ -172,21 +172,53 @@ export async function saveOffer(input) {
   }
 
   revalidateOffer(id);
+  redirect(row.status === 'pending' ? '/admin?f=pending' : '/admin');
+}
+
+// ===== حذف (ينقل لسلة المحذوفات ٣٠ يوم) =====
+export async function deleteOffer(id, { stay = false } = {}) {
+  const token = await requireToken();
+  const listingId = toInt(id);
+  if (!listingId) return { ok: false, message: 'طلب غير صحيح' };
+  try {
+    const rows = await adminUpdate(`listings?id=eq.${listingId}&select=id`, { deleted_at: new Date().toISOString() }, token);
+    if (!rows?.length) return { ok: false, message: 'العرض غير موجود' };
+  } catch {
+    return { ok: false, message: 'ما قدرت أحذف العرض، جرّب مرة ثانية' };
+  }
+  revalidateOffer(listingId);
+  revalidatePath('/admin/trash');
+  if (stay) return { ok: true };
   redirect('/admin');
 }
 
-// ===== حذف نهائي =====
-export async function deleteOffer(id) {
+// ===== إرجاع من السلة =====
+export async function restoreOffer(id) {
+  const token = await requireToken();
+  const listingId = toInt(id);
+  if (!listingId) return { ok: false, message: 'طلب غير صحيح' };
+  try {
+    await adminUpdate(`listings?id=eq.${listingId}&select=id`, { deleted_at: null }, token);
+  } catch {
+    return { ok: false, message: 'ما قدرت أرجّع العرض، جرّب مرة ثانية' };
+  }
+  revalidateOffer(listingId);
+  revalidatePath('/admin/trash');
+  return { ok: true };
+}
+
+// ===== حذف نهائي من السلة =====
+export async function purgeOffer(id) {
   const token = await requireToken();
   const listingId = toInt(id);
   if (!listingId) return { ok: false, message: 'طلب غير صحيح' };
   try {
     const images = await adminSelect(`listing_images?listing_id=eq.${listingId}&select=image_path,thumb_path`, token);
-    await adminDelete(`listings?id=eq.${listingId}`, token);
+    await adminDelete(`listings?id=eq.${listingId}&deleted_at=not.is.null`, token);
     await storageRemove(images.flatMap((img) => [img.image_path, img.thumb_path]), token).catch(() => {});
   } catch {
     return { ok: false, message: 'ما قدرت أحذف العرض، جرّب مرة ثانية' };
   }
-  revalidateOffer(listingId);
-  redirect('/admin');
+  revalidatePath('/admin/trash');
+  return { ok: true };
 }

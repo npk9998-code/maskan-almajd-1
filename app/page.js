@@ -1,5 +1,6 @@
 import OffersBrowser from '@/components/OffersBrowser';
 import SiteHeader from '@/components/SiteHeader';
+import Link from 'next/link';
 import BottomTabs from '@/components/BottomTabs';
 import Tour, { TourReplayButton } from '@/components/Tour';
 import { toCardData } from '@/lib/card-data';
@@ -26,6 +27,15 @@ export default async function HomePage() {
           whatsappNumber={getWhatsAppNumber()}
           siteUrl={getSiteUrl()}
         />
+        <section className="sub-cta" aria-labelledby="sub-cta-title">
+          <div>
+            <h2 id="sub-cta-title">عندك عقار تبي تبيعه؟</h2>
+            <p>اعرضه معنا ونتواصل معك</p>
+          </div>
+          <Link href="/submit" className="btn" data-tour="submit">
+            اعرض عقارك
+          </Link>
+        </section>
         <footer className="site-footer">
           <TourReplayButton />
         </footer>

@@ -53,7 +53,7 @@ export async function logout() {
 }
 
 // الحالات المسموحة من شاشة عروضي
-const STATUSES = new Set(['available', 'hidden', 'sold']);
+const STATUSES = new Set(['available', 'hidden', 'sold', 'pending']);
 
 export async function setListingStatus(id, status) {
   const token = await getActionToken();

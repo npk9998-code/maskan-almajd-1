@@ -3,6 +3,7 @@ import AdminHeader from '@/components/admin/AdminHeader';
 import MyOffers from '@/components/admin/MyOffers';
 import { adminSelect } from '@/lib/admin/api';
 import { requireAdmin } from '@/lib/admin/session';
+import { getStorageUsage, purgeExpired } from '@/lib/admin/trash';
 import { getSiteUrl } from '@/lib/site';
 import { imageUrl } from '@/lib/supabase';
 
@@ -25,7 +26,8 @@ const COLUMNS = [
   'features',
   'status',
   'created_at',
-  'district:districts(name,city:cities(name))',
+  'district:districts(name,direction,city:cities(name))',
+  'note:private_notes(notes)',
   'images:listing_images(image_path,thumb_path,sort_order)',
   'stats:listing_stats(unique_views,total_views,whatsapp_clicks)',
 ].join(',');
@@ -55,27 +57,37 @@ function toRow(r) {
       views: stats.total_views ?? 0,
       whatsapp: stats.whatsapp_clicks ?? 0,
     },
+    createdAt: r.created_at,
+    direction: r.district?.direction ?? null,
+    notes: (Array.isArray(r.note) ? r.note[0]?.notes : r.note?.notes) ?? '',
     district: r.district?.name ?? '',
     city: r.district?.city?.name ?? '',
     thumb: first ? imageUrl(first.thumb_path ?? first.image_path) : null,
   };
 }
 
-export default async function MyOffersPage() {
+export default async function MyOffersPage({ searchParams } = {}) {
+  const { f } = (await searchParams) ?? {};
   const { accessToken } = await requireAdmin('/admin');
-  const rows = await adminSelect(`listings?select=${COLUMNS}&order=created_at.desc`, accessToken);
+  // تنظيف السلة القديمة (العروض بعد ٣٠ يوم والطلبات المرفوضة بعد ٧) قبل ما نقرا العروض
+  await purgeExpired(accessToken).catch(() => {});
+  const [rows, trash, storage] = await Promise.all([
+    adminSelect(`listings?select=${COLUMNS}&deleted_at=is.null&order=created_at.desc`, accessToken),
+    adminSelect('listings?select=id&deleted_at=not.is.null', accessToken).catch(() => []),
+    getStorageUsage(accessToken).catch(() => null),
+  ]);
 
   return (
     <main className="admin-page">
       <AdminHeader
         title="عروضي"
         action={
-          <Link href="/admin/new" className="btn btn--primary admin-add">
+          <Link href="/admin/new" className="btn btn--primary admin-add" data-tour="admin-add">
             <span aria-hidden="true">+</span> إضافة عرض
           </Link>
         }
       />
-      <MyOffers offers={rows.map(toRow)} siteUrl={getSiteUrl()} />
+      <MyOffers offers={rows.map(toRow)} siteUrl={getSiteUrl()} storage={storage} trashCount={trash.length} initialFilter={f === 'pending' ? 'pending' : 'all'} />
     </main>
   );
 }

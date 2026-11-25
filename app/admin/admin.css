@@ -369,7 +369,7 @@
   inset: auto 0 0;
   z-index: 10;
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   background: var(--surface);
   border-top: 1px solid var(--border);
   padding-bottom: env(safe-area-inset-bottom);
@@ -389,6 +389,29 @@
 .admin-nav__item svg {
   width: 26px;
   height: 26px;
+}
+
+.admin-nav__icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.admin-nav__badge {
+  position: absolute;
+  top: -6px;
+  inset-inline-end: -12px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 99px;
+  background: #c0392b;
+  color: #fff;
+  border: 2px solid var(--surface);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
 }
 
 .admin-nav__item.is-active {
@@ -797,56 +820,6 @@
 }
 
 /* خانة الحي مع الاقتراحات */
-.combo {
-  position: relative;
-}
-
-.combo__list {
-  position: absolute;
-  inset-inline: 0;
-  top: calc(100% + 6px);
-  z-index: 20;
-  margin: 0;
-  padding: 6px;
-  list-style: none;
-  background: var(--surface);
-  border: 1px solid var(--border-strong);
-  border-radius: 14px;
-  box-shadow: 0 10px 30px rgb(0 0 0 / 0.12);
-  max-height: 300px;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-}
-
-.combo__list li {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  min-height: 46px;
-  padding: 0 12px;
-  border-radius: 10px;
-  cursor: pointer;
-  font-size: 16px;
-}
-
-.combo__list li.is-active {
-  background: var(--primary-soft);
-  color: var(--primary);
-  font-weight: 600;
-}
-
-.combo__list small {
-  color: var(--muted);
-  font-size: 13px;
-  font-weight: 400;
-}
-
-.combo__empty {
-  color: var(--muted);
-  cursor: default !important;
-}
-
 /* عرض الصورة كاملة */
 .images__view {
   display: block;
@@ -1238,4 +1211,373 @@
 .check-row.is-disabled {
   opacity: 0.6;
   cursor: default;
+}
+
+/* ---- مساحة الصور ---- */
+.storage-bar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+
+.storage-bar__text {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.storage-bar__text .tabular {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.storage-bar__track {
+  margin-top: 8px;
+  height: 8px;
+  border-radius: 99px;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+.storage-bar__track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--primary);
+}
+
+.storage-bar__track.is-warn span {
+  background: #b7791f;
+}
+
+.storage-bar__track.is-danger span {
+  background: #c0392b;
+}
+
+.storage-bar__warn {
+  margin-top: 6px;
+  font-size: 13px;
+  color: #a32d2d;
+  font-weight: 600;
+}
+
+/* ---- خانات الحالة (٤) ---- */
+.admin-filters .pill--round {
+  font-size: 13px;
+  line-height: 1.2;
+  white-space: normal;
+  gap: 4px;
+}
+
+.pill__badge {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 99px;
+  background: #c0392b;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+}
+
+/* ---- بانتظار النشر ---- */
+.status--pending {
+  background: var(--notice-bg);
+  color: var(--notice-ink);
+  border: 1px solid var(--notice-border);
+}
+
+.admin-card__body {
+  position: relative;
+}
+
+.pending-cover {
+  position: absolute;
+  inset: -6px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: rgb(246 245 241 / 0.78);
+  pointer-events: none;
+}
+
+.pending-cover span {
+  padding: 8px 16px;
+  border-radius: 12px;
+  border: 1.5px solid var(--primary);
+  background: var(--surface);
+  color: var(--primary);
+  font-size: 19px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.admin-card__actions--pending {
+  grid-template-columns: 1fr 1.4fr 1fr;
+}
+
+.req-reject {
+  color: #a32d2d;
+}
+
+/* ---- البحث المتقدم ---- */
+.admin-advanced {
+  margin-top: 10px;
+  display: grid;
+  gap: 14px;
+}
+
+.adv-two {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.adv-range {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+
+.adv-range legend {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.adv-range__row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.adv-range__row .field {
+  flex: 1;
+  min-width: 0;
+}
+
+.adv-range__unit {
+  flex: none;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* ---- سلة المحذوفات ---- */
+.trash-link {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 48px;
+  border-radius: var(--radius);
+  border: 1px dashed var(--border-strong);
+  color: var(--text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.trash-note {
+  font-size: 14px;
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  line-height: 1.7;
+}
+
+.trash-heading {
+  margin: 20px 0 10px;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.trash-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.trash-actions .btn {
+  flex: 1;
+}
+
+.trash-confirm {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 14px;
+  background: #fcebeb;
+  color: #791f1f;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.trash-confirm .trash-actions {
+  margin-top: 8px;
+}
+
+/* ---- الطلبات ---- */
+.req-link {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 14px;
+  margin-bottom: 14px;
+}
+
+.req-link h2 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.req-link__url {
+  margin-top: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--primary);
+  font-size: 14px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.req-link__actions {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.req-link__actions .btn,
+.req-actions .btn {
+  gap: 6px;
+}
+
+.req-actions {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.req-empty {
+  display: grid;
+  gap: 4px;
+  text-align: center;
+}
+
+.req-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgb(15 25 22 / 0.5);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.req-sheet__panel {
+  width: 100%;
+  max-width: 640px;
+  max-height: 92dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--surface);
+  border-radius: 22px 22px 0 0;
+  padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
+}
+
+.req-sheet__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.req-sheet__head h2 {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.req-sheet__images {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.req-sheet__images a {
+  aspect-ratio: 1;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--placeholder);
+}
+
+.req-sheet__images img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.req-preview__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 15px;
+}
+
+.req-preview__row span {
+  color: var(--muted);
+}
+
+.req-preview__row b {
+  font-weight: 600;
+  text-align: left;
+}
+
+.req-preview__label {
+  margin-top: 12px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.req-preview__desc {
+  margin-top: 4px;
+  line-height: 1.8;
+  white-space: pre-line;
+}
+
+.req-preview__owner {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--bg);
+  font-size: 14px;
+  color: var(--muted);
+  display: grid;
+  gap: 4px;
+}
+
+.req-sheet__actions {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
 }

@@ -224,4 +224,39 @@ export function CloseIcon(props) {
   );
 }
 
+export function InboxIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M4 13.5l2.2-7.2A2 2 0 018.1 5h7.8a2 2 0 011.9 1.3l2.2 7.2V18a1 1 0 01-1 1H5a1 1 0 01-1-1z" />
+      <path d="M4 13.5h4.5l1.2 2h4.6l1.2-2H20" />
+    </svg>
+  );
+}
+
+export function TrashIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M4.5 7h15M9.5 7V5h5v2M6.5 7l.8 12a1.5 1.5 0 001.5 1.4h6.4a1.5 1.5 0 001.5-1.4l.8-12" />
+    </svg>
+  );
+}
+
+export function LinkIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M10 14a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1 1" />
+      <path d="M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1-1" />
+    </svg>
+  );
+}
+
+export function CopyIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <rect x="8.5" y="8.5" width="11" height="11" rx="2" />
+      <path d="M15.5 8.5V6a1.5 1.5 0 00-1.5-1.5H6A1.5 1.5 0 004.5 6v8A1.5 1.5 0 006 15.5h2.5" />
+    </svg>
+  );
+}
+
 export const TYPE_ICON = { villa: HouseIcon, apartment: BuildingIcon, land: LandIcon, other: StoreIcon };
