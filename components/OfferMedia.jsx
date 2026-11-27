@@ -17,10 +17,23 @@ export function NumberBadge({ id }) {
   return <span className="chip chip--number">رقم {id}</span>;
 }
 
-export function StatusBadge({ offer, isNew }) {
-  if (offer.status === 'sold') return <span className="chip chip--sold">تم البيع</span>;
-  if (isNew) return <span className="chip chip--new">جديد</span>;
-  return null;
+// شارات العرض: فرصة، جديد، نزل السعر (المباع له تظليل لحاله)
+export function StatusBadge({ offer, isNew, dropped }) {
+  const sold = offer.status === 'sold';
+  const items = [];
+  if (offer.featured && !sold) items.push(<span key="f" className="chip chip--featured">✨ فرصة</span>);
+  if (isNew && !sold) items.push(<span key="n" className="chip chip--new">جديد</span>);
+  if (dropped && !sold) items.push(<span key="d" className="chip chip--drop">🔻 نزل السعر</span>);
+  if (!items.length) return null;
+  return <span className="badges">{items}</span>;
+}
+
+export function SoldCover() {
+  return (
+    <span className="sold-cover" aria-hidden="true">
+      <span>تم البيع</span>
+    </span>
+  );
 }
 
 export function Watermark({ onCover }) {

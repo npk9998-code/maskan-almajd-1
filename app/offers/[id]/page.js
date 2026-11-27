@@ -6,10 +6,10 @@ import ViewTracker from '@/components/ViewTracker';
 import WhatsAppLink from '@/components/WhatsAppLink';
 import ShareButton from '@/components/ShareButton';
 import { ChatIcon, ChevronIcon, LockIcon, PinIcon } from '@/components/Icons';
-import { NumberBadge, OfferCover, StatusBadge, Watermark } from '@/components/OfferMedia';
+import { NumberBadge, OfferCover, SoldCover, StatusBadge, Watermark } from '@/components/OfferMedia';
 import SimilarOffers from '@/components/SimilarOffers';
 import ApproxMap from '@/components/ApproxMap';
-import { shortPrice, isNew, offerHeading, offerSpecs, offerSubtitle, offerTitle, offerWhatsappText, priceInfo, pricePerMeter, whatsappLink } from '@/lib/format';
+import { formatNumber, isPriceDropped, shortPrice, isNew, offerHeading, offerSpecs, offerSubtitle, offerTitle, offerWhatsappText, priceInfo, pricePerMeter, whatsappLink } from '@/lib/format';
 import { getPublicOffer, getPublicOffers } from '@/lib/offers';
 import { pickSimilar } from '@/lib/similar';
 import { getFalLicense, getSiteUrl, getWhatsAppNumber } from '@/lib/site';
@@ -58,7 +58,9 @@ export default async function OfferPage({ params }) {
   const hasImages = offer.images.length > 0;
   const siteUrl = getSiteUrl();
   const whatsappHref = whatsappLink(getWhatsAppNumber(), offerWhatsappText(offer, siteUrl));
-  const showStatus = offer.status === 'sold' || isNew(offer);
+  const dropped = isPriceDropped(offer);
+  const sold = offer.status === 'sold';
+  const showStatus = sold || isNew(offer) || offer.featured || dropped;
 
   return (
     <>
@@ -80,12 +82,14 @@ export default async function OfferPage({ params }) {
             </div>
           </div>
           {hasImages ? null : <Watermark onCover />}
+          {sold ? <SoldCover /> : null}
         </div>
 
         <div className="container details__body">
           {showStatus ? (
             <div className="details__status">
-              <StatusBadge offer={offer} isNew={isNew(offer)} />
+              {sold ? <span className="chip chip--sold">تم البيع</span> : null}
+              <StatusBadge offer={offer} isNew={isNew(offer)} dropped={dropped} />
             </div>
           ) : null}
           <h1 className="details__title">{offerHeading(offer)}</h1>
@@ -96,6 +100,11 @@ export default async function OfferPage({ params }) {
           <p className={price.hidden ? 'details__price details__price--hidden' : 'details__price'}>
             {price.text}
           </p>
+          {dropped ? (
+            <p className="price__old tabular">
+              كان <s>{formatNumber(offer.previousPrice)} ريال</s>
+            </p>
+          ) : null}
           {price.note ? <p className="price__note">{price.note}</p> : null}
           {pricePerMeter(offer) ? <p className="price__ppm tabular">{pricePerMeter(offer)}</p> : null}
 

@@ -104,6 +104,7 @@ function buildRow(input) {
       price,
       price_display: priceDisplay,
       show_price_per_meter: Boolean(input.showPricePerMeter) && priceDisplay !== 'hidden',
+      is_featured: Boolean(input.featured),
       area,
       rooms: isLand ? null : toInt(input.rooms),
       bathrooms: isLand ? null : toInt(input.bathrooms),
@@ -155,10 +156,18 @@ export async function saveOffer(input) {
       await adminInsert('listing_images', images.map((img) => ({ ...img, listing_id: id })), token);
     }
 
-    // الملاحظات الخاصة
+    // البيانات الخاصة: اسم المالك وجواله والملاحظات
     const notes = toText(input.notes, 4000);
-    if (notes) {
-      await adminInsert('private_notes', { listing_id: id, notes }, token, { upsertOn: 'listing_id' });
+    const ownerName = toText(input.ownerName, 80);
+    const phoneDigits = String(input.ownerPhone ?? '').replace(/[^\d+ ]/g, '').trim().slice(0, 16);
+    const ownerPhone = phoneDigits.replace(/\D/g, '').length >= 7 ? phoneDigits : '';
+    if (notes || ownerName || ownerPhone) {
+      await adminInsert(
+        'private_notes',
+        { listing_id: id, notes, owner_name: ownerName || null, owner_phone: ownerPhone || null },
+        token,
+        { upsertOn: 'listing_id' },
+      );
     } else {
       await adminDelete(`private_notes?listing_id=eq.${id}`, token);
     }
@@ -167,7 +176,10 @@ export async function saveOffer(input) {
     if (Array.isArray(input.removedPaths) && input.removedPaths.length) {
       await storageRemove(input.removedPaths, token).catch(() => {});
     }
-  } catch {
+  } catch (err) {
+    if (String(err?.message).includes('featured_limit')) {
+      return { ok: false, errors: { featured: true }, message: 'وصلت ٨ فرص. شيل «فرصة» من عرض ثاني قبل.' };
+    }
     return { ok: false, message: 'صار خطأ وما انحفظ العرض، جرّب مرة ثانية' };
   }
 

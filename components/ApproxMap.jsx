@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CloseIcon, ExpandIcon } from '@/components/Icons';
-import { CITY_GEO, MAP_STYLE, districtFeature, districtKey, loadCityShapes, loadMapLibre, ringsBounds, arabicLabels, supportsWebGL } from '@/lib/geo';
+import { hasCityMap, MAP_STYLE, districtFeature, districtKey, loadCityShapes, loadMapLibre, ringsBounds, arabicLabels, supportsWebGL } from '@/lib/geo';
 
 const PRIMARY = '#0f5c4d';
 
@@ -15,7 +15,7 @@ export default function ApproxMap({ city, district, similar }) {
   const mapRef = useRef(null);
   const boundsRef = useRef(null);
   const [visible, setVisible] = useState(false);
-  const [status, setStatus] = useState(CITY_GEO[city] ? 'loading' : 'none'); // loading | ready | none | error
+  const [status, setStatus] = useState(hasCityMap(city) ? 'loading' : 'none'); // loading | ready | none | error
   const [expanded, setExpanded] = useState(false);
 
   // ما نحمّل الخريطة إلا لما يوصل لها العميل

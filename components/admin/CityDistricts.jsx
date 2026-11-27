@@ -8,6 +8,8 @@ import DistrictsInput, { DIRECTION_KEYS, emptyDistricts } from '@/components/adm
 import { ChevronIcon, SearchIcon } from '@/components/Icons';
 import { DIRECTION_LABEL } from '@/lib/admin/options';
 import { normalizeArabic } from '@/lib/format';
+import { geoFile } from '@/lib/geo';
+import { loadCityDistricts } from '@/lib/admin/city-catalog';
 
 export default function CityDistricts({ city, districts }) {
   const [visible, setVisible] = useState(city.visible);
@@ -98,9 +100,27 @@ export default function CityDistricts({ city, districts }) {
               </div>
             </>
           ) : (
-            <button type="button" className="add-city" onClick={() => setAdding(true)}>
-              <span aria-hidden="true">+</span> إضافة أحياء
-            </button>
+            <>
+              {geoFile(city.name) ? (
+                <button
+                  type="button"
+                  className="btn btn--primary btn--block"
+                  disabled={isPending}
+                  onClick={() =>
+                    run(async () => {
+                      const d = await loadCityDistricts(geoFile(city.name)).catch(() => null);
+                      if (!d) return { ok: false, message: 'ما قدرت أجيب الأحياء، جرّب مرة ثانية' };
+                      return addDistricts(city.id, d.value);
+                    })
+                  }
+                >
+                  {isPending ? 'جاري جلب الأحياء…' : 'جيب أحياء المدينة الرسمية'}
+                </button>
+              ) : null}
+              <button type="button" className="add-city" onClick={() => setAdding(true)}>
+                <span aria-hidden="true">+</span> إضافة أحياء بنفسك
+              </button>
+            </>
           )}
         </section>
 

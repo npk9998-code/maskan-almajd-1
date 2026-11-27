@@ -17,6 +17,7 @@ export default function SearchFilters({
   city,
   onCity,
   cities = null,
+  cityGroups = null,
   placeholder = 'ابحث بالحي أو المدينة أو النوع…',
   className = 'filters',
 }) {
@@ -111,11 +112,21 @@ export default function SearchFilters({
                   <span className="sr-only">المدينة</span>
                   <select name="city" value={city} onChange={(e) => onCity(e.target.value)}>
                     <option value="">المدينة</option>
-                    {cities.map((c) => (
-                      <option key={c} value={c}>
-                        {c}
-                      </option>
-                    ))}
+                    {cityGroups
+                      ? cityGroups.map((g) => (
+                          <optgroup key={g.region} label={g.region}>
+                            {g.cities.map((c) => (
+                              <option key={c} value={c}>
+                                {c}
+                              </option>
+                            ))}
+                          </optgroup>
+                        ))
+                      : cities.map((c) => (
+                          <option key={c} value={c}>
+                            {c}
+                          </option>
+                        ))}
                   </select>
                   <ChevronDownIcon className="field__chevron" />
                 </label>

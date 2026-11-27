@@ -9,12 +9,15 @@ function LogoutIcon(props) {
   );
 }
 
-export default function AdminHeader({ title, action }) {
+export default function AdminHeader({ title, action, lead = null }) {
   return (
     <header className="admin-header">
-      <div className="admin-header__text">
-        <p>لوحة التحكم</p>
-        <h1>{title}</h1>
+      <div className="admin-header__start">
+        {lead}
+        <div className="admin-header__text">
+          <p>لوحة التحكم</p>
+          <h1>{title}</h1>
+        </div>
       </div>
       <div className="admin-header__actions">
         {action}

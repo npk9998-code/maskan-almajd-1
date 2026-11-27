@@ -20,7 +20,7 @@ function revalidateCities() {
   revalidatePath('/admin', 'layout');
 }
 
-const cleanName = (v) => (typeof v === 'string' ? v.replace(/\s+/g, ' ').trim().slice(0, 40) : '');
+const cleanName = (v) => (typeof v === 'string' ? v.replace(/\s+/g, ' ').trim().slice(0, 60) : '');
 
 // "النرجس، الملقا\nالياسمين" ← ['النرجس','الملقا','الياسمين']
 function parseDistricts(byDirection) {
@@ -35,7 +35,7 @@ function parseDistricts(byDirection) {
       rows.push({ name, direction });
     }
   }
-  return rows.slice(0, 300);
+  return rows.slice(0, 400);
 }
 
 export async function setCityVisible(id, visible) {
@@ -62,9 +62,15 @@ export async function createCity(input) {
     const existing = await adminSelect(`cities?select=id&name=eq.${encodeURIComponent(name)}`, token);
     if (existing.length) return { ok: false, errors: { name: 'هالمدينة موجودة من قبل' } };
     const last = await adminSelect('cities?select=sort_order&order=sort_order.desc&limit=1', token);
+    let regionId = null;
+    const regionName = cleanName(input?.region);
+    if (regionName) {
+      const [r] = await adminSelect(`regions?select=id&name=eq.${encodeURIComponent(regionName)}`, token);
+      regionId = r?.id ?? null;
+    }
     const [city] = await adminInsert(
       'cities?select=id',
-      { name, is_visible: Boolean(input?.visible), sort_order: (last[0]?.sort_order ?? 0) + 1 },
+      { name, is_visible: Boolean(input?.visible), region_id: regionId, sort_order: (last[0]?.sort_order ?? 0) + 1 },
       token,
     );
     cityId = city.id;

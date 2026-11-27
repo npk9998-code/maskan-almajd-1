@@ -1581,3 +1581,410 @@
   grid-template-columns: 1fr 1fr;
   gap: 8px;
 }
+
+/* ---- الدفعة الجديدة: مفضلة، فرصة، مباع، مشاركة، تصدير ---- */
+.admin-header__start {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.admin-fav {
+  position: relative;
+}
+
+.admin-fav.is-active {
+  background: #fdecea;
+  color: #c0392b;
+  border: 1px solid #f3c6c0;
+}
+
+.admin-fav__count {
+  position: absolute;
+  top: -6px;
+  inset-inline-end: -6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 99px;
+  background: #c0392b;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+}
+
+.admin-card__thumb {
+  position: relative;
+}
+
+.admin-heart {
+  position: absolute;
+  bottom: 4px;
+  inset-inline-start: 4px;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 99px;
+  background: rgb(255 255 255 / 0.92);
+  color: var(--muted);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.18);
+}
+
+.admin-heart svg {
+  width: 17px;
+  height: 17px;
+}
+
+.admin-heart.is-on {
+  color: #c0392b;
+}
+
+.admin-heart.is-on svg {
+  fill: currentColor;
+}
+
+.admin-sold {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgb(28 33 48 / 0.55);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.admin-card--sold .admin-card__info {
+  opacity: 0.75;
+}
+
+.admin-card--featured {
+  border: 2px solid var(--gold);
+}
+
+.admin-featured {
+  color: var(--gold);
+}
+
+.admin-card__actions {
+  display: flex;
+}
+
+.admin-card__actions > .btn:not(.btn--icon) {
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-card__actions .btn--icon,
+.share-menu {
+  flex: none;
+}
+
+.admin-filters--3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.share-menu {
+  position: relative;
+}
+
+.share-menu__list {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  inset-inline-end: 0;
+  z-index: 20;
+  min-width: 230px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 10px 28px rgb(0 0 0 / 0.16);
+  padding: 6px;
+  display: grid;
+}
+
+.share-menu__list button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  background: none;
+  text-align: start;
+  padding: 12px;
+  border-radius: 10px;
+  font: 600 14px var(--font);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.share-menu__list button:hover,
+.share-menu__list button:focus-visible {
+  background: var(--bg);
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border-radius: 99px;
+  border: 2px solid var(--border);
+  border-top-color: var(--primary);
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.admin-bottom-links {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.admin-bottom-links .trash-link {
+  margin-top: 0;
+  background: none;
+  font: 600 15px var(--font);
+  cursor: pointer;
+}
+
+.owner-phone {
+  display: flex;
+  gap: 8px;
+}
+
+.owner-phone .field {
+  flex: 1;
+}
+
+.owner-phone input {
+  text-align: right;
+}
+
+.check-row--gold {
+  border-color: rgb(201 162 39 / 0.5);
+  background: #fbf6e6;
+}
+
+.region-group + .region-group {
+  margin-top: 18px;
+}
+
+.region-group__title {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.city-suggest {
+  position: static;
+  margin-top: 6px;
+}
+
+.city-suggest li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.city-picked {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.btn--block {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+/* ---- التقارير ---- */
+.rep-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.rep-brand {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.rep-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 14px;
+  margin-bottom: 12px;
+  break-inside: avoid;
+}
+
+.rep-section h2 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.rep-section h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  margin: 12px 0 6px;
+}
+
+.rep-section--warn {
+  border-color: #f0dca6;
+  background: #fffaf0;
+}
+
+.rep-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.rep-stat {
+  background: var(--bg);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.rep-stat dt {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.rep-stat dd {
+  font-size: 26px;
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+.rep-change {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.rep-change.is-up {
+  color: #17784a;
+}
+
+.rep-change.is-down {
+  color: #a32d2d;
+}
+
+.rep-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  counter-reset: rep;
+}
+
+.rep-list li {
+  counter-increment: rep;
+  border-bottom: 1px solid var(--border);
+}
+
+.rep-list li:last-child {
+  border-bottom: 0;
+}
+
+.rep-list a,
+.rep-list--plain li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 0;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.rep-list a > span:first-child,
+.rep-list--plain li > span:first-child {
+  display: grid;
+  gap: 2px;
+}
+
+.rep-list a > span:first-child::before,
+.rep-list--plain li > span:first-child::before {
+  content: counter(rep) '. ';
+  display: none;
+}
+
+.rep-list small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.rep-list__num {
+  flex: none;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.rep-chart svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.rep-chart figcaption {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.rep-note {
+  font-size: 13px;
+  text-align: center;
+  margin: 8px 0 20px;
+}
+
+@media print {
+  .admin-nav,
+  .no-print,
+  .admin-header form,
+  .tour {
+    display: none !important;
+  }
+
+  .admin-header {
+    position: static;
+    border: 0;
+  }
+
+  body,
+  .admin-page {
+    background: #fff !important;
+    padding-bottom: 0 !important;
+  }
+
+  .rep-section {
+    box-shadow: none;
+  }
+
+  @page {
+    size: A4;
+    margin: 14mm;
+  }
+}
+
+.admin-bottom-links .trash-link {
+  font-family: inherit;
+  color: var(--text);
+}

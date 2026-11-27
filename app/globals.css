@@ -12,6 +12,7 @@
   --muted: #6b6a64;
   --placeholder: #e5e2da;
   --placeholder-ink: #8a8676;
+  --gold: #c9a227;
   --sold: #1c2130;
   --notice-bg: #fbf6ec;
   --notice-border: #ecdcbc;
@@ -2342,4 +2343,136 @@ a {
 
 .sub-input[dir='ltr'] {
   text-align: right;
+}
+
+/* ===== شارات: فرصة، جديد، نزل السعر + تظليل المباع ===== */
+.badges {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.details__status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.details__status .badges {
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.chip--new,
+.card .chip--new {
+  background: #c0392b;
+  color: #fff;
+}
+
+.chip--featured {
+  background: var(--gold);
+  color: #fff;
+}
+
+.chip--drop {
+  background: #fff;
+  color: #a32d2d;
+  border: 1px solid #f0c2bd;
+}
+
+.card--featured {
+  border: 2px solid var(--gold);
+  box-shadow: 0 4px 18px rgb(201 162 39 / 0.18);
+}
+
+.mini-card--featured {
+  border: 2px solid var(--gold);
+}
+
+.price__old {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.price__old s {
+  text-decoration-thickness: 1.5px;
+}
+
+.sold-cover {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgb(246 245 241 / 0.62);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.sold-cover span {
+  padding: 8px 22px;
+  border-radius: 12px;
+  background: var(--sold);
+  color: #fff;
+  font-size: 22px;
+  font-weight: 700;
+  transform: rotate(-6deg);
+  box-shadow: 0 4px 14px rgb(0 0 0 / 0.18);
+}
+
+.sold-cover--sm span {
+  font-size: 14px;
+  padding: 4px 12px;
+}
+
+.gallery .sold-cover span {
+  font-size: 30px;
+  padding: 10px 30px;
+}
+
+.media__top {
+  z-index: 2;
+}
+
+.card--sold .card__media img {
+  filter: none;
+}
+
+.grid-more {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+.featured-block__title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #8a6d1a;
+  margin: 4px 0 12px;
+}
+
+.featured-block__title--rest {
+  color: var(--text);
+  margin-top: 24px;
+}
+
+.map-chip--region {
+  height: 32px;
+  font-size: 13px;
+  background: rgb(255 255 255 / 0.9);
+}
+
+.map-chip--region.is-active {
+  background: var(--sold);
+  color: #fff;
+}
+
+.map-count--gold {
+  background: var(--gold);
+}
+
+.map-count--gold.is-active {
+  background: #fff;
+  color: #8a6d1a;
+  border-color: var(--gold);
 }

@@ -16,7 +16,7 @@ export default function AdminNav({ requests = 0 }) {
   return (
     <nav className="admin-nav" aria-label="تنقل لوحة التحكم">
       {ITEMS.map(({ href, label, Icon, tour }) => {
-        const active = href === '/admin' ? pathname === '/admin' || pathname === '/admin/trash' : pathname.startsWith(href);
+        const active = href === '/admin' ? pathname === '/admin' || pathname === '/admin/trash' || pathname === '/admin/reports' : pathname.startsWith(href);
         const badge = href === '/admin/requests' && requests > 0 ? requests : 0;
         return (
           <Link

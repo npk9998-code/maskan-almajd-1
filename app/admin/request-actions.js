@@ -82,14 +82,18 @@ export async function acceptRequest(id) {
 
     const notes = [
       `من طلب عميل رقم ${r.id}`,
-      `المالك: ${r.owner_name} · ${r.owner_phone}`,
       r.deed_number ? `رقم الصك: ${r.deed_number}` : null,
       `وافق مبدئياً على عقد الوساطة: ${dateText(r.consent_at)}`,
       newDistrict ? `الحي "${newDistrict}" انضاف جديد بموقع (الوسط)، عدّله من صفحة المدن` : null,
     ]
       .filter(Boolean)
       .join('\n');
-    await adminInsert('private_notes', { listing_id: listingId, notes }, token, { upsertOn: 'listing_id' });
+    await adminInsert(
+      'private_notes',
+      { listing_id: listingId, notes, owner_name: r.owner_name, owner_phone: r.owner_phone },
+      token,
+      { upsertOn: 'listing_id' },
+    );
 
     await adminDelete(`submissions?id=eq.${reqId}`, token);
   } catch {

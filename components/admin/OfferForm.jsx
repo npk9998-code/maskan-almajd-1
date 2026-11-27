@@ -6,7 +6,7 @@ import { deleteOffer, discardUploads, saveOffer } from '@/app/admin/offer-action
 import DistrictCombobox from '@/components/admin/DistrictCombobox';
 import ImagePicker from '@/components/admin/ImagePicker';
 import SuggestInput from '@/components/admin/SuggestInput';
-import { ChevronIcon, LockIcon, PinIcon } from '@/components/Icons';
+import { ChatIcon, ChevronIcon, LockIcon, PinIcon } from '@/components/Icons';
 import {
   AGE_OPTIONS,
   CUSTOM_TYPE_OPTIONS,
@@ -50,6 +50,9 @@ const EMPTY = {
   description: '',
   adLicense: '',
   notes: '',
+  ownerName: '',
+  ownerPhone: '',
+  featured: false,
   status: 'available',
   images: [],
 };
@@ -340,6 +343,17 @@ export default function OfferForm({ cities, districts, usedTypes = [], initial }
               </small>
             </span>
           </label>
+          <label className="check-row check-row--gold">
+            <input
+              type="checkbox"
+              checked={form.featured}
+              onChange={(e) => setForm((f) => ({ ...f, featured: e.target.checked }))}
+            />
+            <span>
+              <strong>✨ عرض مميز (فرصة)</strong>
+              <small>يطلع أول شي بإطار ذهبي وشارة «فرصة». الحد ٨ عروض.</small>
+            </span>
+          </label>
         </Section>
 
         <Section title={<h2>المواصفات</h2>}>
@@ -513,21 +527,68 @@ export default function OfferForm({ cities, districts, usedTypes = [], initial }
           tone="private"
           title={
             <h2 className="private-title">
-              <LockIcon className="icon-sm" /> ملاحظات خاصة
+              <LockIcon className="icon-sm" /> بيانات خاصة
             </h2>
           }
         >
           <p className="field-hint">ما تظهر للعملاء أبداً، لك أنت بس</p>
+          <Field label="اسم المالك" htmlFor="f-owner">
+            <div className="field">
+              <input
+                id="f-owner"
+                type="text"
+                autoComplete="off"
+                maxLength={80}
+                value={form.ownerName}
+                onChange={set('ownerName')}
+                placeholder="محمد ****"
+              />
+            </div>
+          </Field>
+          <Field label="جوال المالك" htmlFor="f-owner-phone">
+            <div className="owner-phone">
+              <div className="field">
+                <input
+                  id="f-owner-phone"
+                  type="tel"
+                  inputMode="tel"
+                  dir="ltr"
+                  autoComplete="off"
+                  className="tabular"
+                  maxLength={16}
+                  value={form.ownerPhone}
+                  onChange={(e) => setForm((f) => ({ ...f, ownerPhone: e.target.value.replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[^\d+ ]/g, '') }))}
+                  placeholder="05********"
+                />
+              </div>
+              {form.ownerPhone.replace(/\D/g, '').length >= 9 ? (
+                <a
+                  className="btn btn--wa btn--icon"
+                  href={`https://wa.me/${(() => {
+                    const d = form.ownerPhone.replace(/\D/g, '');
+                    return d.startsWith('05') ? `966${d.slice(1)}` : d.startsWith('00') ? d.slice(2) : d;
+                  })()}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="واتساب المالك"
+                >
+                  <ChatIcon />
+                </a>
+              ) : null}
+            </div>
+          </Field>
+          <Field label="ملاحظات" htmlFor="f-notes">
           <div className="field">
             <textarea
               rows={4}
               maxLength={4000}
               value={form.notes}
               onChange={set('notes')}
-              placeholder="الموقع الدقيق، رقم المالك أو المسوّق، العمولة…"
-              aria-label="ملاحظات خاصة"
+              id="f-notes"
+              placeholder="الموقع الدقيق، العمولة، رقم الصك…"
             />
           </div>
+          </Field>
         </Section>
 
         <Section title={<h2>حالة العرض</h2>}>

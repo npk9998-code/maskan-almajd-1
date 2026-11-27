@@ -8,7 +8,7 @@ import { imageUrl } from '@/lib/supabase';
 export const metadata = { title: 'تعديل العرض' };
 
 const COLUMNS =
-  'id,property_type,custom_type,district_id,price,price_display,show_price_per_meter,area,rooms,bathrooms,property_age_years,facade,street_width,floor,features,description,ad_license_number,status,district:districts(city_id),images:listing_images(image_path,thumb_path,sort_order),note:private_notes(notes)';
+  'id,property_type,custom_type,district_id,price,price_display,show_price_per_meter,is_featured,area,rooms,bathrooms,property_age_years,facade,street_width,floor,features,description,ad_license_number,status,district:districts(city_id),images:listing_images(image_path,thumb_path,sort_order),note:private_notes(notes,owner_name,owner_phone)';
 
 export default async function EditOfferPage({ params }) {
   const { id } = await params;
@@ -22,7 +22,8 @@ export default async function EditOfferPage({ params }) {
   const r = rows[0];
   if (!r) notFound();
 
-  const note = Array.isArray(r.note) ? r.note[0]?.notes : r.note?.notes;
+  const noteRow = Array.isArray(r.note) ? r.note[0] : r.note;
+  const note = noteRow?.notes;
   const initial = {
     id: r.id,
     type: r.property_type,
@@ -43,6 +44,9 @@ export default async function EditOfferPage({ params }) {
     description: r.description ?? '',
     adLicense: r.ad_license_number ?? '',
     notes: note ?? '',
+    ownerName: noteRow?.owner_name ?? '',
+    ownerPhone: noteRow?.owner_phone ?? '',
+    featured: Boolean(r.is_featured),
     status: r.status,
     images: [...(r.images ?? [])]
       .sort((a, b) => a.sort_order - b.sort_order)

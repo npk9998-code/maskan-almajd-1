@@ -4,14 +4,15 @@ import Link from 'next/link';
 import BottomTabs from '@/components/BottomTabs';
 import Tour, { TourReplayButton } from '@/components/Tour';
 import { toCardData } from '@/lib/card-data';
-import { getPublicOffers, getVisibleCities } from '@/lib/offers';
+import { groupCitiesByRegion } from '@/lib/format';
+import { getPublicOffers, getVisibleCityRegions } from '@/lib/offers';
 import { getSiteUrl, getWhatsAppNumber } from '@/lib/site';
 
 // الصفحة تتحدث من قاعدة البيانات كل دقيقة
 export const revalidate = 60;
 
 export default async function HomePage() {
-  const [offers, cities] = await Promise.all([getPublicOffers(), getVisibleCities()]);
+  const [offers, cityRegions] = await Promise.all([getPublicOffers(), getVisibleCityRegions()]);
 
   return (
     <>
@@ -23,7 +24,8 @@ export default async function HomePage() {
         </div>
         <OffersBrowser
           offers={offers.map(toCardData)}
-          cities={cities}
+          cities={cityRegions.map((c) => c.name)}
+          cityGroups={groupCitiesByRegion(cityRegions)}
           whatsappNumber={getWhatsAppNumber()}
           siteUrl={getSiteUrl()}
         />

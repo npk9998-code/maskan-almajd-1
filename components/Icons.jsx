@@ -259,4 +259,30 @@ export function CopyIcon(props) {
   );
 }
 
+export function ChartIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M4 20h16M7 16v-5M12 16V7M17 16v-8" />
+    </svg>
+  );
+}
+
+export function DownloadIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M12 4v11M7.5 10.5L12 15l4.5-4.5M5 19.5h14" />
+    </svg>
+  );
+}
+
+export function ImageIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <rect x="3.5" y="4.5" width="17" height="15" rx="2.5" />
+      <circle cx="9" cy="10" r="1.8" />
+      <path d="M20.5 16l-5-5-8.5 8.5" />
+    </svg>
+  );
+}
+
 export const TYPE_ICON = { villa: HouseIcon, apartment: BuildingIcon, land: LandIcon, other: StoreIcon };

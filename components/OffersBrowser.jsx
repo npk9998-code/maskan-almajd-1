@@ -1,10 +1,11 @@
 'use client';
 
-import { useDeferredValue, useEffect, useMemo, useState } from 'react';
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import OfferCard from '@/components/OfferCard';
 import SearchFilters from '@/components/SearchFilters';
 import { ChatIcon, HeartIcon } from '@/components/Icons';
 import { consumeFavoritesRequest, setShowFavorites, useFavorites, useShowFavorites } from '@/lib/favorites';
+import { trackMiss, trackVisit } from '@/lib/track';
 import {
   normalizeArabic,
   offerWhatsappText,
@@ -43,22 +44,55 @@ function NoResults({ href, hasFilters, onReset }) {
   );
 }
 
+const PAGE = 12;
+
+// يعرض ١٢ عرض، وكل ما ينزل العميل تطلع اللي بعدها (أخف على الجوال)
 function OfferGrid({ offers, priorityFirst, whatsappNumber, siteUrl }) {
+  const [shown, setShown] = useState(PAGE);
+  const moreRef = useRef(null);
+  const hasMore = shown < offers.length;
+
+  useEffect(() => {
+    setShown(PAGE);
+  }, [offers]);
+
+  useEffect(() => {
+    const el = moreRef.current;
+    if (!el || !hasMore || !('IntersectionObserver' in window)) return undefined;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) setShown((n) => n + PAGE);
+      },
+      { rootMargin: '900px 0px' },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [hasMore, shown]);
+
   return (
-    <div className="grid">
-      {offers.map((offer, i) => (
-        <OfferCard
-          key={offer.id}
-          offer={offer}
-          priority={priorityFirst && i < 2}
-          whatsappHref={whatsappLink(whatsappNumber, offerWhatsappText(offer, siteUrl))}
-        />
-      ))}
-    </div>
+    <>
+      <div className="grid">
+        {offers.slice(0, shown).map((offer, i) => (
+          <OfferCard
+            key={offer.id}
+            offer={offer}
+            priority={priorityFirst && i < 4}
+            whatsappHref={whatsappLink(whatsappNumber, offerWhatsappText(offer, siteUrl))}
+          />
+        ))}
+      </div>
+      {hasMore ? (
+        <div ref={moreRef} className="grid-more">
+          <button type="button" className="btn btn--outline" onClick={() => setShown((n) => n + PAGE)}>
+            عرض المزيد ({offers.length - shown})
+          </button>
+        </div>
+      ) : null}
+    </>
   );
 }
 
-export default function OffersBrowser({ offers, cities, whatsappNumber, siteUrl }) {
+export default function OffersBrowser({ offers, cities, cityGroups, whatsappNumber, siteUrl }) {
   const [query, setQuery] = useState('');
   const [direction, setDirection] = useState(null);
   const [type, setType] = useState('all');
@@ -70,6 +104,7 @@ export default function OffersBrowser({ offers, cities, whatsappNumber, siteUrl 
   // جاي من صفحة عرض وضاغط زر المفضلة
   useEffect(() => {
     if (consumeFavoritesRequest()) setShowFavorites(true);
+    trackVisit();
   }, []);
 
   const favoriteOffers = useMemo(() => {
@@ -99,10 +134,23 @@ export default function OffersBrowser({ offers, cities, whatsappNumber, siteUrl 
       }
       main.push(offer); // السعر المخفي يطلع دايم
     }
+    // الفرص أول شي
+    const byFeatured = (a, b) => Number(b.featured && b.status !== 'sold') - Number(a.featured && a.status !== 'sold');
+    main.sort(byFeatured);
     return { main, near };
   }, [offers, deferredQuery, direction, type, city, maxPrice]);
 
   const hasFilters = query || direction || type !== 'all' || city || budget;
+  const featured = hasFilters ? [] : main.filter((o) => o.featured && o.status !== 'sold');
+  const rest = featured.length ? main.filter((o) => !(o.featured && o.status !== 'sold')) : main;
+  const noResults = !showFavs && hasFilters && main.length === 0 && near.length === 0;
+
+  // نسجل البحث اللي ما لقى شي (بعد ما يوقف العميل عن الكتابة)
+  useEffect(() => {
+    if (!noResults) return undefined;
+    const t = setTimeout(() => trackMiss({ city, district: deferredQuery, type, budget }), 2500);
+    return () => clearTimeout(t);
+  }, [noResults, city, deferredQuery, type, budget]);
   const resetFilters = () => {
     setQuery('');
     setDirection(null);
@@ -125,6 +173,7 @@ export default function OffersBrowser({ offers, cities, whatsappNumber, siteUrl 
         city={city}
         onCity={setCity}
         cities={cities}
+        cityGroups={cityGroups}
       />
 
       {showFavs ? (
@@ -159,9 +208,16 @@ export default function OffersBrowser({ offers, cities, whatsappNumber, siteUrl 
           {main.length + near.length} عرض
         </p>
 
-        {main.length > 0 ? (
-          <OfferGrid offers={main} priorityFirst whatsappNumber={whatsappNumber} siteUrl={siteUrl} />
-        ) : near.length > 0 ? (
+        {featured.length > 0 ? (
+          <div className="featured-block">
+            <h3 className="featured-block__title">✨ فرص مميزة</h3>
+            <OfferGrid offers={featured} priorityFirst whatsappNumber={whatsappNumber} siteUrl={siteUrl} />
+            {rest.length ? <h3 className="featured-block__title featured-block__title--rest">كل العروض</h3> : null}
+          </div>
+        ) : null}
+        {rest.length > 0 ? (
+          <OfferGrid offers={rest} priorityFirst={!featured.length} whatsappNumber={whatsappNumber} siteUrl={siteUrl} />
+        ) : main.length > 0 ? null : near.length > 0 ? (
           <p className="empty empty--inline">ما فيه عروض داخل ميزانيتك، شوف المقاربة لها تحت.</p>
         ) : (
           <NoResults

@@ -30,6 +30,13 @@ export default function CitiesList({ cities }) {
     state.map((c) => (c.id === id ? { ...c, visible } : c)),
   );
 
+  const groups = [];
+  for (const c of list) {
+    const last = groups[groups.length - 1];
+    if (last?.region === c.region) last.cities.push(c);
+    else groups.push({ region: c.region, cities: [c] });
+  }
+
   const toggle = (id, visible) => {
     setError('');
     startTransition(async () => {
@@ -46,30 +53,37 @@ export default function CitiesList({ cities }) {
           {error}
         </p>
       ) : null}
-      <ul className="city-list">
-        {list.map((c) => (
-          <li key={c.id}>
-            <Link href={`/admin/cities/${c.id}`} className="city-list__info">
-              <strong>{c.name}</strong>
-              <span className="tabular">
-                {c.visible ? 'ظاهرة للعملاء' : 'مخفية'} · {c.districtCount} حي
-              </span>
-              <span className="city-list__offers tabular">
-                {offersText(c.offers.total)}
-                {c.offers.total > 0 ? ` (${c.offers.available} معروض)` : ''}
-              </span>
-            </Link>
-            <Switch
-              checked={c.visible}
-              onChange={(v) => toggle(c.id, v)}
-              label={`${c.name}: ${c.visible ? 'ظاهرة' : 'مخفية'}`}
-            />
-            <Link href={`/admin/cities/${c.id}`} className="city-list__more" aria-label={`أحياء ${c.name}`}>
-              <ChevronIcon style={{ rotate: '180deg' }} />
-            </Link>
-          </li>
-        ))}
-      </ul>
+      {groups.map((g) => (
+        <section key={g.region} className="region-group">
+          <h2 className="region-group__title">
+            {g.region} <span className="muted tabular">({g.cities.length === 1 ? 'مدينة وحدة' : `${g.cities.length} مدن`})</span>
+          </h2>
+          <ul className="city-list">
+            {g.cities.map((c) => (
+              <li key={c.id}>
+                <Link href={`/admin/cities/${c.id}`} className="city-list__info">
+                  <strong>{c.name}</strong>
+                  <span className="tabular">
+                    {c.visible ? 'ظاهرة للعملاء' : 'مخفية'} · {c.districtCount} حي
+                  </span>
+                  <span className="city-list__offers tabular">
+                    {offersText(c.offers.total)}
+                    {c.offers.total > 0 ? ` (${c.offers.available} معروض)` : ''}
+                  </span>
+                </Link>
+                <Switch
+                  checked={c.visible}
+                  onChange={(v) => toggle(c.id, v)}
+                  label={`${c.name}: ${c.visible ? 'ظاهرة' : 'مخفية'}`}
+                />
+                <Link href={`/admin/cities/${c.id}`} className="city-list__more" aria-label={`أحياء ${c.name}`}>
+                  <ChevronIcon style={{ rotate: '180deg' }} />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
     </>
   );
 }

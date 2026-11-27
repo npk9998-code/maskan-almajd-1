@@ -9,7 +9,7 @@ export const metadata = { title: 'المدن' };
 export default async function CitiesPage() {
   const { accessToken } = await requireAdmin('/admin/cities');
   const [rows, listings] = await Promise.all([
-    adminSelect('cities?select=id,name,is_visible,sort_order,districts(count)&order=sort_order.asc,name.asc', accessToken),
+    adminSelect('cities?select=id,name,is_visible,sort_order,region:regions(id,name),districts(count)&order=sort_order.asc,name.asc', accessToken),
     adminSelect('listings?select=status,district:districts(city_id)', accessToken),
   ]);
 
@@ -28,6 +28,8 @@ export default async function CitiesPage() {
     id: c.id,
     name: c.name,
     visible: c.is_visible,
+    region: c.region?.name ?? 'مدن بدون منطقة',
+    regionOrder: c.region?.id ?? 99,
     districtCount: c.districts?.[0]?.count ?? 0,
     offers: offerCounts.get(c.id) ?? { total: 0, available: 0 },
   }));
@@ -40,7 +42,7 @@ export default async function CitiesPage() {
           المدينة اللي تشغّلها تطلع في قائمة المدن بصفحة العروض. واللي تطفيها تختفي هي وعروضها من الموقع،
           والعروض تبقى محفوظة عندك.
         </p>
-        <CitiesList cities={cities} />
+        <CitiesList cities={cities.sort((a, b) => a.regionOrder - b.regionOrder)} />
         <Link href="/admin/cities/new" className="add-city">
           <span aria-hidden="true">+</span> إضافة مدينة
         </Link>

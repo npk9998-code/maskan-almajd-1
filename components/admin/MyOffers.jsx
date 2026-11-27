@@ -2,28 +2,28 @@
 
 import Link from 'next/link';
 import { useDeferredValue, useId, useMemo, useOptimistic, useState, useTransition } from 'react';
-import { setListingStatus } from '@/app/admin/actions';
+import { setFavorite, setListingStatus } from '@/app/admin/actions';
 import { deleteOffer } from '@/app/admin/offer-actions';
+import ShareMenu from '@/components/admin/ShareMenu';
 import Tour, { TourReplayButton } from '@/components/Tour';
 import {
   ChatIcon,
   ChevronDownIcon,
+  DownloadIcon,
   EyeIcon,
+  HeartIcon,
   SearchIcon,
-  ShareIcon,
   SlidersIcon,
   TrashIcon,
   TYPE_ICON,
   UserIcon,
 } from '@/components/Icons';
-import { offerShareText } from '@/lib/admin/share-text';
-import { DIRECTIONS, TYPE_FILTERS, formatNumber, normalizeArabic, offerTitle } from '@/lib/format';
+import { DIRECTIONS, TYPE_FILTERS, TYPE_LABEL, formatNumber, normalizeArabic, offerTitle, typeName } from '@/lib/format';
 
 // "بانتظار النشر" لحالها وما تطلع تحت "الكل"
 const FILTERS = [
-  { key: 'all', label: 'الكل' },
-  { key: 'available', label: 'معروض' },
-  { key: 'sold', label: 'تم البيع' },
+  { key: 'available', label: 'المعروضة' },
+  { key: 'featured', label: '✨ فرصة' },
   { key: 'pending', label: 'بانتظار النشر' },
 ];
 
@@ -50,15 +50,75 @@ const SORTS = [
 
 const EMPTY_ADV = { type: 'all', city: '', district: '', direction: null, priceMin: '', priceMax: '', areaMin: '', areaMax: '', added: null, sort: 'newest' };
 
+const STATUS_TEXT = { available: 'معروض', hidden: 'مخفي', sold: 'تم البيع', pending: 'بانتظار النشر' };
+
+// تصدير اللي قدامك على الشاشة لملف Excel
+async function exportExcel(list, siteUrl) {
+  const { buildXlsx } = await import('@/lib/admin/xlsx');
+  const blob = buildXlsx({
+    columns: [
+      { title: 'رقم العرض', width: 11, type: 'number' },
+      { title: 'النوع', width: 10 },
+      { title: 'المدينة', width: 13 },
+      { title: 'الحي', width: 16 },
+      { title: 'المساحة (م²)', width: 12, type: 'number' },
+      { title: 'السعر (ريال)', width: 14, type: 'number' },
+      { title: 'الحالة', width: 15 },
+      { title: 'اسم المالك', width: 18 },
+      { title: 'جوال المالك', width: 14 },
+      { title: 'رابط العرض', width: 12, type: 'link' },
+    ],
+    rows: list.map((o) => [
+      o.id,
+      o.type === 'other' ? typeName(o) : TYPE_LABEL[o.type],
+      o.city,
+      o.district,
+      o.area,
+      o.price ?? 'عند التواصل',
+      STATUS_TEXT[o.status] ?? o.status,
+      o.ownerName,
+      o.ownerPhone,
+      { text: 'فتح العرض', url: `${siteUrl}/offers/${o.id}` },
+    ]),
+  });
+  const d = new Date();
+  const name = `عروض-مسكن-المجد-${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}.xlsx`;
+  const file = new File([blob], name, { type: blob.type });
+  if (navigator.canShare?.({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file] });
+      return;
+    } catch (e) {
+      if (e?.name === 'AbortError') return;
+    }
+  }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+
+const waOwner = (phone) => {
+  const d = String(phone ?? '').replace(/\D/g, '');
+  if (!d) return null;
+  return `https://wa.me/${d.startsWith('05') ? `966${d.slice(1)}` : d.startsWith('00') ? d.slice(2) : d}`;
+};
+
 const ADMIN_TOUR = [
   { target: 'nav-requests', title: 'الطلبات', text: 'هنا توصلك عروض العملاء، والرقم الأحمر يقول كم طلب جديد. وفيها رابط «اعرض عقارك» تنسخه أو تشاركه مع أي مالك.' },
   { target: 'nav-offers', title: 'عروضي', text: 'كل عروضك هنا: تنشر وتخفي وتعدل وتشارك.' },
+  { target: 'reports', title: 'التقارير', text: 'إحصائيات الأسبوع وأكثر العروض مشاهدة، وتقدر تنزلها PDF.' },
+  { target: 'admin-fav', title: 'المفضلة', text: 'العروض اللي حطيت عليها قلب تلقاها هنا بضغطة.' },
   { target: 'filter-pending', title: 'بانتظار النشر', text: 'الطلبات اللي قبلتها توصل هنا، وما تنزل للعملاء إلا لما تضغط «نشر».' },
   { target: 'admin-advanced', title: 'البحث المتقدم', text: 'دوّر وفلتر عروضك بالنوع والمدينة والسعر والمساحة، ورتبها مثل ما تبي.' },
   { target: 'admin-add', title: 'إضافة عرض', text: 'من هنا تضيف عرض جديد بنفسك.' },
   { target: 'nav-cities', title: 'المدن', text: 'تظهر وتخفي المدن، وتضيف الأحياء.' },
   { target: 'storage', title: 'مساحة الصور', text: 'يبين كم استهلكت من مساحة الصور المجانية (١ جيجا).' },
   { target: 'trash', title: 'سلة المحذوفات', text: 'أي عرض تحذفه يجلس هنا ٣٠ يوم، وتقدر ترجعه.' },
+  { target: 'export', title: 'تصدير Excel', text: 'ينزل لك ملف Excel باللي قدامك على الشاشة (لو فلترت ينصدر المفلتر بس).' },
 ];
 
 const digits = (v) => v.replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/\D/g, '').slice(0, 12);
@@ -120,32 +180,7 @@ function Stats({ stats }) {
   );
 }
 
-function ShareOffer({ offer, siteUrl, onCopied }) {
-  const share = async () => {
-    const text = offerShareText(offer, siteUrl);
-    if (navigator.share) {
-      try {
-        await navigator.share({ text });
-      } catch {
-        // قفل القائمة
-      }
-      return;
-    }
-    try {
-      await navigator.clipboard.writeText(text);
-      onCopied();
-    } catch {
-      window.prompt('انسخ الرسالة:', text);
-    }
-  };
-  return (
-    <button type="button" className="btn btn--outline btn--icon" onClick={share} aria-label={`مشاركة العرض رقم ${offer.id}`}>
-      <ShareIcon />
-    </button>
-  );
-}
-
-function OfferRow({ offer, onStatus, onDelete, busy, siteUrl, onCopied }) {
+function OfferRow({ offer, onStatus, onDelete, onFavorite, busy, siteUrl, whatsappNumber, onMessage }) {
   const [confirming, setConfirming] = useState(false);
   const Icon = TYPE_ICON[offer.type];
   const chip = STATUS_CHIP[offer.status];
@@ -154,15 +189,33 @@ function OfferRow({ offer, onStatus, onDelete, busy, siteUrl, onCopied }) {
   const pending = offer.status === 'pending';
 
   return (
-    <article className={pending ? 'admin-card admin-card--pending' : 'admin-card'} aria-busy={busy || undefined}>
+    <article
+      className={['admin-card', pending ? 'admin-card--pending' : '', sold ? 'admin-card--sold' : '', offer.featured && !sold ? 'admin-card--featured' : '']
+        .filter(Boolean)
+        .join(' ')}
+      aria-busy={busy || undefined}
+    >
       <div className="admin-card__body">
         <div className="admin-card__top">
           <div className={offer.thumb ? 'admin-card__thumb' : 'admin-card__thumb admin-card__thumb--cover'}>
             {offer.thumb ? <img src={offer.thumb} alt="" width={128} height={128} loading="lazy" decoding="async" /> : <Icon />}
+            {sold ? <span className="admin-sold">تم البيع</span> : null}
+            <button
+              type="button"
+              className={offer.favorite ? 'admin-heart is-on' : 'admin-heart'}
+              aria-pressed={offer.favorite}
+              aria-label={offer.favorite ? `شيل العرض ${offer.id} من المفضلة` : `أضف العرض ${offer.id} للمفضلة`}
+              onClick={() => onFavorite(offer.id, !offer.favorite)}
+            >
+              <HeartIcon />
+            </button>
           </div>
           <div className="admin-card__info">
             <div className="admin-card__title-row">
-              <h2>{offerTitle(offer)}</h2>
+              <h2>
+                {offerTitle(offer)}
+                {offer.featured && !sold ? <span className="admin-featured"> ✨</span> : null}
+              </h2>
               <span className={chip.className}>{chip.label}</span>
             </div>
             <p className="admin-card__meta tabular">
@@ -216,7 +269,18 @@ function OfferRow({ offer, onStatus, onDelete, busy, siteUrl, onCopied }) {
           <button type="button" className="btn btn--outline" disabled={busy} onClick={() => onStatus(offer.id, sold ? 'available' : 'sold')}>
             {sold ? 'إرجاع للعرض' : 'تم البيع'}
           </button>
-          {hidden ? null : <ShareOffer offer={offer} siteUrl={siteUrl} onCopied={onCopied} />}
+          {waOwner(offer.ownerPhone) ? (
+            <a
+              className="btn btn--wa btn--icon"
+              href={waOwner(offer.ownerPhone)}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`واتساب المالك ${offer.ownerName || ''}`}
+            >
+              <ChatIcon />
+            </a>
+          ) : null}
+          {hidden ? null : <ShareMenu offer={offer} siteUrl={siteUrl} whatsappNumber={whatsappNumber} onMessage={onMessage} />}
         </div>
       )}
     </article>
@@ -259,19 +323,22 @@ function ChipGroup({ label, options, value, onChange }) {
   );
 }
 
-export default function MyOffers({ offers, siteUrl, storage, trashCount, initialFilter = 'all' }) {
+export default function MyOffers({ offers, siteUrl, whatsappNumber, storage, trashCount, initialFilter = 'available', favoritesOnly = false }) {
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState(initialFilter);
   const [adv, setAdv] = useState(EMPTY_ADV);
   const [advOpen, setAdvOpen] = useState(false);
   const [archiveOpen, setArchiveOpen] = useState(false);
+  const [soldOpen, setSoldOpen] = useState(false);
   const [error, setError] = useState('');
   const [toast, setToast] = useState('');
   const [busyId, setBusyId] = useState(null);
   const [, startTransition] = useTransition();
   const advId = useId();
   const [optimistic, applyOptimistic] = useOptimistic(offers, (list, change) =>
-    change.removed ? list.filter((o) => o.id !== change.id) : list.map((o) => (o.id === change.id ? { ...o, status: change.status } : o)),
+    change.removed
+      ? list.filter((o) => o.id !== change.id)
+      : list.map((o) => (o.id === change.id ? { ...o, ...(change.status ? { status: change.status } : {}), ...(change.favorite != null ? { favorite: change.favorite } : {}) } : o)),
   );
 
   const deferredQuery = useDeferredValue(query);
@@ -297,7 +364,7 @@ export default function MyOffers({ offers, siteUrl, storage, trashCount, initial
     adv.sort !== 'newest',
   ].filter(Boolean).length;
 
-  const { visible, archived } = useMemo(() => {
+  const { visible, archived, soldList } = useMemo(() => {
     const q = normalizeArabic(deferredQuery.trim());
     const a = deferredAdv;
     const dq = normalizeArabic(a.district.trim());
@@ -324,10 +391,14 @@ export default function MyOffers({ offers, siteUrl, storage, trashCount, initial
     };
     const visible = [];
     const archived = [];
+    const soldList = [];
     for (const o of optimistic) {
       if (!matches(o)) continue;
-      if (o.status === 'hidden') archived.push(o);
-      else if (filter === 'all' ? o.status !== 'pending' : o.status === filter) visible.push(o);
+      if (favoritesOnly) {
+        if (o.favorite) visible.push(o);
+      } else if (o.status === 'hidden') archived.push(o);
+      else if (o.status === 'sold') soldList.push(o);
+      else if (filter === 'featured' ? o.featured && o.status !== 'pending' : o.status === filter) visible.push(o);
     }
     const by = {
       newest: (x, y) => new Date(y.createdAt) - new Date(x.createdAt),
@@ -339,12 +410,37 @@ export default function MyOffers({ offers, siteUrl, storage, trashCount, initial
     if (by) {
       visible.sort(by);
       archived.sort(by);
+      soldList.sort(by);
     }
-    return { visible, archived };
-  }, [optimistic, deferredQuery, deferredAdv, filter]);
+    return { visible, archived, soldList };
+  }, [optimistic, deferredQuery, deferredAdv, filter, favoritesOnly]);
 
   const searching = deferredQuery.trim().length > 0 || advCount > 0;
   const showArchive = archiveOpen || (searching && archived.length > 0);
+  const showSold = soldOpen || (searching && soldList.length > 0);
+  const featuredCount = optimistic.filter((o) => o.featured && o.status !== 'pending').length;
+
+  const toggleFavorite = (id, on) => {
+    setError('');
+    startTransition(async () => {
+      applyOptimistic({ id, favorite: on });
+      const result = await setFavorite(id, on);
+      if (!result?.ok) setError(result?.message ?? 'صار خطأ، جرّب مرة ثانية');
+    });
+  };
+
+  const onExport = async () => {
+    const list = favoritesOnly ? visible : [...visible, ...(showSold ? soldList : []), ...(showArchive ? archived : [])];
+    if (!list.length) {
+      flash('ما فيه عروض قدامك أصدّرها');
+      return;
+    }
+    try {
+      await exportExcel(list, siteUrl);
+    } catch {
+      setError('ما قدرت أجهز ملف Excel، جرّب مرة ثانية');
+    }
+  };
 
   const flash = (text) => {
     setToast(text);
@@ -375,7 +471,14 @@ export default function MyOffers({ offers, siteUrl, storage, trashCount, initial
     });
   };
 
-  const rowProps = { onStatus: changeStatus, onDelete: remove, siteUrl, onCopied: () => flash('انتسخت رسالة العرض ✓') };
+  const rowProps = {
+    onStatus: changeStatus,
+    onDelete: remove,
+    onFavorite: toggleFavorite,
+    siteUrl,
+    whatsappNumber,
+    onMessage: (text) => (text ? flash(text) : setToast('')),
+  };
 
   return (
     <div className="admin-body">
@@ -459,10 +562,12 @@ export default function MyOffers({ offers, siteUrl, storage, trashCount, initial
         </div>
       ) : null}
 
-      <div className="chips admin-filters" role="group" aria-label="فلتر الحالة">
+      {favoritesOnly ? null : (
+      <div className="chips admin-filters admin-filters--3" role="group" aria-label="فلتر الحالة">
         {FILTERS.map((f) => {
           const active = filter === f.key;
           const badge = f.key === 'pending' && counts.pending ? counts.pending : 0;
+          const label = f.key === 'featured' ? `${f.label} (${featuredCount}/8)` : f.label;
           return (
             <button
               key={f.key}
@@ -472,12 +577,13 @@ export default function MyOffers({ offers, siteUrl, storage, trashCount, initial
               onClick={() => setFilter(f.key)}
               data-tour={f.key === 'pending' ? 'filter-pending' : undefined}
             >
-              {f.label}
+              {label}
               {badge ? <span className="pill__badge tabular">{badge}</span> : null}
             </button>
           );
         })}
       </div>
+      )}
 
       {error ? (
         <p className="admin-error" role="alert">
@@ -492,8 +598,42 @@ export default function MyOffers({ offers, siteUrl, storage, trashCount, initial
           ))}
         </div>
       ) : (
-        <p className="empty">{filter === 'pending' ? 'ما فيه عروض بانتظار النشر. الطلبات اللي تقبلها توصل هنا.' : 'ما فيه عروض هنا.'}</p>
+        <p className="empty">
+          {favoritesOnly
+            ? 'ما حطيت قلب على أي عرض. اضغط القلب على صورة العرض عشان يطلع هنا.'
+            : filter === 'pending'
+              ? 'ما فيه عروض بانتظار النشر. الطلبات اللي تقبلها توصل هنا.'
+              : filter === 'featured'
+                ? 'ما فيه فرص. تقدر تخلي العرض «فرصة» من صفحة تعديله (لين ٨ عروض).'
+                : 'ما فيه عروض هنا.'}
+        </p>
       )}
+
+      {favoritesOnly ? null : (
+      <>
+      <section className="archive">
+        <button
+          type="button"
+          className={showSold ? 'archive__toggle is-open' : 'archive__toggle'}
+          aria-expanded={showSold}
+          aria-controls="sold-list"
+          onClick={() => setSoldOpen((v) => !v)}
+        >
+          <span>
+            المباعة <span className="muted tabular">({searching ? soldList.length : counts.sold})</span>
+          </span>
+          <ChevronDownIcon className="archive__chevron" />
+        </button>
+        {showSold ? (
+          <div className="admin-list" id="sold-list">
+            {soldList.length ? (
+              soldList.map((o) => <OfferRow key={o.id} offer={o} busy={busyId === o.id} {...rowProps} />)
+            ) : (
+              <p className="empty">ما فيه عروض مباعة.</p>
+            )}
+          </div>
+        ) : null}
+      </section>
 
       <section className="archive">
         <button
@@ -519,11 +659,20 @@ export default function MyOffers({ offers, siteUrl, storage, trashCount, initial
         ) : null}
       </section>
 
-      <Link href="/admin/trash" className="trash-link" data-tour="trash">
-        <TrashIcon className="icon-sm" />
-        <span>سلة المحذوفات</span>
-        <span className="muted tabular">({trashCount})</span>
-      </Link>
+      </>
+      )}
+
+      <div className="admin-bottom-links">
+        <Link href="/admin/trash" className="trash-link" data-tour="trash">
+          <TrashIcon className="icon-sm" />
+          <span>سلة المحذوفات</span>
+          <span className="muted tabular">({trashCount})</span>
+        </Link>
+        <button type="button" className="trash-link" onClick={onExport} data-tour="export">
+          <DownloadIcon className="icon-sm" />
+          <span>تصدير Excel</span>
+        </button>
+      </div>
 
       <div className="site-footer">
         <TourReplayButton eventName="mz-admin-tour" label="كيف أستخدم لوحة التحكم؟" />

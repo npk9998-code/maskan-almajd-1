@@ -75,3 +75,18 @@ export async function setListingStatus(id, status) {
   revalidatePath('/admin');
   return { ok: true };
 }
+
+// قلب المفضلة في لوحة التحكم (خاص بالمدير)
+export async function setFavorite(id, on) {
+  const token = await getActionToken();
+  if (!token) return { ok: false, message: 'انتهت الجلسة، سجّل دخول من جديد' };
+  const listingId = Number(id);
+  if (!Number.isInteger(listingId) || listingId <= 0) return { ok: false, message: 'طلب غير صحيح' };
+  try {
+    await adminUpdate(`listings?id=eq.${listingId}&select=id`, { admin_favorite: Boolean(on) }, token);
+  } catch {
+    return { ok: false, message: 'ما قدرت أحفظ المفضلة، جرّب مرة ثانية' };
+  }
+  revalidatePath('/admin');
+  return { ok: true };
+}

@@ -5,7 +5,7 @@ import MiniOfferCard from '@/components/MiniOfferCard';
 import { ChatIcon, CloseIcon, SearchIcon, SlidersIcon } from '@/components/Icons';
 import { filterOffers } from '@/lib/filter';
 import { DIRECTIONS, TYPE_FILTERS, formatNumber, normalizeArabic, requestMessage, whatsappLink } from '@/lib/format';
-import { CITY_GEO, MAP_STYLE, districtFeature, districtKey, loadCityShapes, loadMapLibre, ringsBounds, arabicLabels, supportsWebGL } from '@/lib/geo';
+import { hasCityMap, MAP_STYLE, districtFeature, districtKey, loadCityShapes, loadMapLibre, ringsBounds, arabicLabels, supportsWebGL } from '@/lib/geo';
 
 const PRIMARY = '#0f5c4d';
 const HINT_KEY = 'mz_map_hint';
@@ -19,8 +19,8 @@ function countLabel(n) {
   return `${n} ${n <= 10 ? 'عروض' : 'عرض'}`;
 }
 
-export default function MapBrowser({ offers, cities, whatsappNumber }) {
-  const mapCities = useMemo(() => cities.filter((c) => CITY_GEO[c]), [cities]);
+export default function MapBrowser({ offers, cities, cityGroups = null, whatsappNumber }) {
+  const mapCities = useMemo(() => cities.filter((c) => hasCityMap(c)), [cities]);
   const firstCity = useMemo(() => {
     const counts = new Map();
     for (const o of offers) counts.set(o.city, (counts.get(o.city) ?? 0) + 1);
@@ -32,6 +32,15 @@ export default function MapBrowser({ offers, cities, whatsappNumber }) {
   const [direction, setDirection] = useState(null);
   const [budget, setBudget] = useState('');
   const [city, setCity] = useState(firstCity);
+  // لما تكثر المدن: سطر للمناطق وسطر لمدن المنطقة
+  const regionGroups = useMemo(
+    () => (cityGroups ?? []).map((g) => ({ ...g, cities: g.cities.filter((c) => hasCityMap(c)) })).filter((g) => g.cities.length),
+    [cityGroups],
+  );
+  const twoRows = mapCities.length > 8 && regionGroups.length > 1;
+  const cityRegion = regionGroups.find((g) => g.cities.includes(city))?.region ?? regionGroups[0]?.region;
+  const [region, setRegion] = useState(cityRegion);
+  const regionCities = regionGroups.find((g) => g.region === region)?.cities ?? mapCities;
   const [selected, setSelected] = useState(null);
   const [geo, setGeo] = useState(null); // { city, shapes }
   // ما نستخدم حدود مدينة ثانية لو المدينة تغيّرت وللحين ما تحمّلت
@@ -70,8 +79,7 @@ export default function MapBrowser({ offers, cities, whatsappNumber }) {
     const q = normalizeArabic(value);
     const match = q.length >= 3 ? mapCities.find((c) => normalizeArabic(c) === q) : null;
     if (match) {
-      setCity(match);
-      setSelected(null);
+      pickCity(match);
       setQuery('');
       return;
     }
@@ -81,6 +89,8 @@ export default function MapBrowser({ offers, cities, whatsappNumber }) {
   const pickCity = (c) => {
     setCity(c);
     setSelected(null);
+    const g = regionGroups.find((x) => x.cities.includes(c));
+    if (g) setRegion(g.region);
   };
 
   // حدود أحياء المدينة
@@ -281,7 +291,8 @@ export default function MapBrowser({ offers, cities, whatsappNumber }) {
       features.push(districtFeature(i++, shape, { key }));
       const el = document.createElement('button');
       el.type = 'button';
-      el.className = key === selected ? 'map-count is-active' : 'map-count';
+      const gold = list.some((o) => o.featured && o.status !== 'sold');
+      el.className = ['map-count', key === selected ? 'is-active' : '', gold ? 'map-count--gold' : ''].filter(Boolean).join(' ');
       el.textContent = String(list.length);
       el.setAttribute('aria-label', `حي ${shape.name}: ${countLabel(list.length)}`);
       el.addEventListener('click', (ev) => {
@@ -368,9 +379,27 @@ export default function MapBrowser({ offers, cities, whatsappNumber }) {
           </button>
         </div>
 
+        {twoRows ? (
+          <div className="map-chips map-chips--regions" role="group" aria-label="المنطقة">
+            {regionGroups.map((g) => (
+              <button
+                key={g.region}
+                type="button"
+                className={g.region === region ? 'map-chip map-chip--region is-active' : 'map-chip map-chip--region'}
+                aria-pressed={g.region === region}
+                onClick={() => {
+                  setRegion(g.region);
+                  if (!g.cities.includes(city)) pickCity(g.cities[0]);
+                }}
+              >
+                {g.region.replace(/^منطقة /, '')}
+              </button>
+            ))}
+          </div>
+        ) : null}
         {mapCities.length > 1 ? (
           <div className="map-chips" role="group" aria-label="المدينة">
-            {mapCities.map((c) => (
+            {(twoRows ? regionCities : mapCities).map((c) => (
               <button
                 key={c}
                 type="button"
