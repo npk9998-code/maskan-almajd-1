@@ -210,7 +210,7 @@ export default function OffersBrowser({ offers, cities, cityGroups, whatsappNumb
 
         {featured.length > 0 ? (
           <div className="featured-block">
-            <h3 className="featured-block__title">✨ فرص مميزة</h3>
+            <h3 className="featured-block__title" data-tour="featured">✨ فرص مميزة</h3>
             <OfferGrid offers={featured} priorityFirst whatsappNumber={whatsappNumber} siteUrl={siteUrl} />
             {rest.length ? <h3 className="featured-block__title featured-block__title--rest">كل العروض</h3> : null}
           </div>

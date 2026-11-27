@@ -2,13 +2,14 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
-const DONE_KEY = 'mz_tour_done';
+const DONE_KEY = 'mz_tour_done_v2';
 export const TOUR_EVENT = 'mz-tour';
 
 const STEPS = [
   { target: 'search', title: 'البحث', text: 'اكتب اسم الحي أو المدينة، وتطلع لك العروض على طول.' },
   { target: 'type', title: 'نوع العقار', text: 'اختر اللي تبغاه: فيلا، شقة، أرض…' },
   { target: 'advanced', title: 'بحث متقدم', text: 'حدد موقع الحي (شمال، جنوب…) والمدينة وميزانيتك.' },
+  { target: 'featured', title: '✨ فرص مميزة', text: 'عروض مختارة تطلع أول شي. وانتبه للشارات: «جديد» نزل خلال يومين، و«🔻 نزل السعر» تخفيض جديد.' },
   { target: 'favorites', title: 'المفضلة', text: 'اضغط القلب على أي عرض يعجبك، وتلقاه محفوظ هنا.' },
   { target: 'map-tab', title: 'الخريطة', text: 'شوف العروض على الخريطة حسب الأحياء.' },
   { target: 'whatsapp', title: 'تواصل معي', text: 'أي استفسار؟ كلمني مباشرة على واتساب.' },

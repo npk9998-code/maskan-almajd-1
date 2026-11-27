@@ -109,13 +109,15 @@ const waOwner = (phone) => {
 
 const ADMIN_TOUR = [
   { target: 'nav-requests', title: 'الطلبات', text: 'هنا توصلك عروض العملاء، والرقم الأحمر يقول كم طلب جديد. وفيها رابط «اعرض عقارك» تنسخه أو تشاركه مع أي مالك.' },
-  { target: 'nav-offers', title: 'عروضي', text: 'كل عروضك هنا: تنشر وتخفي وتعدل وتشارك.' },
   { target: 'reports', title: 'التقارير', text: 'إحصائيات الأسبوع وأكثر العروض مشاهدة، وتقدر تنزلها PDF.' },
   { target: 'admin-fav', title: 'المفضلة', text: 'العروض اللي حطيت عليها قلب تلقاها هنا بضغطة.' },
+  { target: 'filter-featured', title: '✨ فرصة', text: 'العروض المميزة (لين ٨). تخلي العرض فرصة من صفحة تعديله، ويطلع للعملاء أول شي بإطار ذهبي.' },
   { target: 'filter-pending', title: 'بانتظار النشر', text: 'الطلبات اللي قبلتها توصل هنا، وما تنزل للعملاء إلا لما تضغط «نشر».' },
   { target: 'admin-advanced', title: 'البحث المتقدم', text: 'دوّر وفلتر عروضك بالنوع والمدينة والسعر والمساحة، ورتبها مثل ما تبي.' },
+  { target: 'owner-wa', title: 'واتساب المالك', text: 'يفتح محادثة مع جوال المالك المكتوب في صفحة التعديل.' },
+  { target: 'share', title: 'مشاركة العرض', text: 'شارك العرض كرسالة، أو صورة جاهزة للسناب والإنستقرام، أو مجموعة صور لتيك توك.' },
   { target: 'admin-add', title: 'إضافة عرض', text: 'من هنا تضيف عرض جديد بنفسك.' },
-  { target: 'nav-cities', title: 'المدن', text: 'تظهر وتخفي المدن، وتضيف الأحياء.' },
+  { target: 'nav-cities', title: 'المدن', text: 'المدن مقسمة بالمناطق. تضيف مدينة بكتابة اسمها، وتنضاف معها أحياؤها الرسمية.' },
   { target: 'storage', title: 'مساحة الصور', text: 'يبين كم استهلكت من مساحة الصور المجانية (١ جيجا).' },
   { target: 'trash', title: 'سلة المحذوفات', text: 'أي عرض تحذفه يجلس هنا ٣٠ يوم، وتقدر ترجعه.' },
   { target: 'export', title: 'تصدير Excel', text: 'ينزل لك ملف Excel باللي قدامك على الشاشة (لو فلترت ينصدر المفلتر بس).' },
@@ -272,6 +274,7 @@ function OfferRow({ offer, onStatus, onDelete, onFavorite, busy, siteUrl, whatsa
           {waOwner(offer.ownerPhone) ? (
             <a
               className="btn btn--wa btn--icon"
+              data-tour="owner-wa"
               href={waOwner(offer.ownerPhone)}
               target="_blank"
               rel="noopener noreferrer"
@@ -575,7 +578,7 @@ export default function MyOffers({ offers, siteUrl, whatsappNumber, storage, tra
               className={active ? 'pill pill--round is-active' : 'pill pill--round'}
               aria-pressed={active}
               onClick={() => setFilter(f.key)}
-              data-tour={f.key === 'pending' ? 'filter-pending' : undefined}
+              data-tour={f.key === 'pending' ? 'filter-pending' : f.key === 'featured' ? 'filter-featured' : undefined}
             >
               {label}
               {badge ? <span className="pill__badge tabular">{badge}</span> : null}
@@ -677,7 +680,7 @@ export default function MyOffers({ offers, siteUrl, whatsappNumber, storage, tra
       <div className="site-footer">
         <TourReplayButton eventName="mz-admin-tour" label="كيف أستخدم لوحة التحكم؟" />
       </div>
-      <Tour steps={ADMIN_TOUR} storageKey="mz_admin_tour_done" eventName="mz-admin-tour" />
+      <Tour steps={ADMIN_TOUR} storageKey="mz_admin_tour_done_v2" eventName="mz-admin-tour" />
 
       {toast ? (
         <span className="toast" role="status">

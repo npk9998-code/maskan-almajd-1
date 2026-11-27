@@ -67,7 +67,7 @@ export default function ShareMenu({ offer, siteUrl, whatsappNumber, onMessage })
   };
 
   return (
-    <div className="share-menu" ref={ref}>
+    <div className="share-menu" ref={ref} data-tour="share">
       <button
         type="button"
         className="btn btn--outline btn--icon"
